@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>American Griot One</title>
+<!--
+  American Griot One — landing page menu (set as home page, Wix "Embed HTML" version)
+  ------------------------------------------------------------------
+  Paste this whole file into an Embed HTML element on the
+  american-griot-one page and give that element the ID  #agoMenu.
+  Each button sends { source: 'ago', type: 'nav', page: '<slug>' } to the
+  page code (agoMenu_page-code.js), which opens the page.
+  To add another button: copy a tile below as
+  <a class="tile" data-page="your-page-slug" href="#"> (like buttons 1-7)
+  and add that slug to PAGES in agoMenu_page-code.js.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Palette: black ~75% (grounds, cards, type), green ~15% (accents, links, hover), red ~10% (bands, single highlights) */
+  :root {
+    --bg: #0b0b0b; --card: #121212; --card-2: #161616; --line: #262626; --ink: #e9e6df; --muted: #8f8b83;
+    --red: #b3261e; --green: #2f8f5b; --green-soft: rgba(47,143,91,.14);
+    --serif: "DM Serif Display", Georgia, "Times New Roman", serif;
+    --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+  .band { height: 4px; background: linear-gradient(90deg, var(--bg) 0 38%, var(--red) 38% 46%, var(--bg) 46% 47%, var(--green) 47% 60%, var(--bg) 60% 100%); border-bottom: 1px solid var(--line); }
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 18px 44px; }
+  header { text-align: center; margin-bottom: 32px; }
+  header .over { font-size: 11px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  header h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 5vw, 50px); letter-spacing: .01em; line-height: 1.05; }
+  header h1 span { color: var(--green); }
+  header .rule { width: 56px; height: 2px; background: var(--red); margin: 16px auto 0; }
+  header p { margin: 14px 0 0; color: var(--muted); font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .tile { display: flex; flex-direction: column; text-decoration: none; color: inherit;
+    background: var(--card); border: 1px solid var(--line); border-radius: 4px; overflow: hidden;
+    transition: border-color .2s ease, background-color .2s ease, transform .2s ease; }
+  a.tile:hover, a.tile:focus-visible { border-color: var(--green); background: var(--card-2); transform: translateY(-2px); outline: none; }
+  a.tile:focus-visible { box-shadow: 0 0 0 2px var(--green-soft); }
+  .art { display: block; width: 100%; height: auto; aspect-ratio: 16 / 7; background: #0b0b0b; border-bottom: 1px solid var(--line); }
+  .txt { padding: 16px 20px 20px; }
+  .txt h2 { margin: 0 0 6px; font-family: var(--serif); font-weight: 400; font-size: 24px; letter-spacing: .01em; }
+  .txt p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .go { margin-top: 14px; color: var(--green); font-weight: 600; font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; }
+  a.tile:hover .go { color: var(--ink); }
+  .soon { border-style: dashed; cursor: default; }
+  .soon .art { opacity: .7; }
+  .soon .go { color: var(--muted); }
+  /* live visitor counter */
+  .live { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 5px 14px 5px 11px;
+    border: 1px solid var(--line); border-radius: 2px; background: var(--card); font-size: 11.5px; letter-spacing: .06em; color: var(--muted); }
+  .live[hidden] { display: none; }
+  .live b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; transition: color .3s; }
+  .live b.bump { color: var(--green); }
+  .live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(47,143,91,.6); animation: beat 2.4s infinite; }
+  @keyframes beat { 0% { box-shadow: 0 0 0 0 rgba(47,143,91,.55); } 70% { box-shadow: 0 0 0 6px rgba(47,143,91,0); } 100% { box-shadow: 0 0 0 0 rgba(47,143,91,0); } }
+  @media (prefers-reduced-motion: reduce) { .tile { transition: none; } .live .dot { animation: none; } }
+</style>
+</head>
+<body>
+<div class="band"></div>
+<main>
+  <header>
+    <h1>American <span>Griot</span> One</h1>
+    <div class="rule" aria-hidden="true"></div>
+    <p>The stories, the history, and the voices that carry them.</p>
+    <div class="live" id="live" hidden aria-live="polite"><span class="dot" aria-hidden="true"></span><span><b id="liveN">0</b> <span id="liveW">visitors</span> today</span></div>
+  </header>
+
+  <div class="grid">
+    <!-- 1: American History timeline -->
+    <a class="tile" data-page="home" href="#" aria-label="American History timeline">
+      <svg class="art" viewBox="0 0 480 210" role="img" aria-hidden="true">
+  <rect width="480" height="210" fill="#0b0b0b"/>
+  <g stroke="#1a1a1a" stroke-width="1"><line x1="0" y1="52" x2="480" y2="52"/><line x1="0" y1="168" x2="480" y2="168"/></g>
+  <g stroke="#333" stroke-width="1"><line x1="36" y1="114" x2="36" y2="110"/><line x1="53" y1="114" x2="53" y2="114"/><line x1="70" y1="114" x2="70" y2="114"/><line x1="87" y1="114" x2="87" y2="114"/><line x1="104" y1="114" x2="104" y2="110"/><line x1="121" y1="114" x2="121" y2="114"/><line x1="138" y1="114" x2="138" y2="114"/><line x1="155" y1="114" x2="155" y2="114"/><line x1="172" y1="114" x2="172" y2="110"/><line x1="189" y1="114" x2="189" y2="114"/><line x1="206" y1="114" x2="206" y2="114"/><line x1="223" y1="114" x2="223" y2="114"/><line x1="240" y1="114" x2="240" y2="110"/><line x1="257" y1="114" x2="257" y2="114"/><line x1="274" y1="114" x2="274" y2="114"/><line x1="291" y1="114" x2="291" y2="114"/><line x1="308" y1="114" x2="308" y2="110"/><line x1="325" y1="114" x2="325" y2="114"/><line x1="342" y1="114" x2="342" y2="114"/><line x1="359" y1="114" x2="359" y2="114"/><line x1="376" y1="114" x2="376" y2="110"/><line x1="393" y1="114" x2="393" y2="114"/><line x1="410" y1="114" x2="410" y2="114"/><line x1="427" y1="114" x2="427" y2="114"/><line x1="444" y1="114" x2="444" y2="110"/></g>
+  <line x1="36" y1="118" x2="444" y2="118" stroke="#3a3a3a" stroke-width="1"/>
+  <line x1="36" y1="118" x2="380" y2="118" stroke="#e9e6df" stroke-width="1.5"/>
+  <rect x="65.5" y="113.5" width="9" height="9" transform="rotate(45 70 118)" fill="#b3261e"/><rect x="165.5" y="113.5" width="9" height="9" transform="rotate(45 170 118)" fill="#0b0b0b" stroke="#e9e6df" stroke-width="1.2"/><rect x="265.5" y="113.5" width="9" height="9" transform="rotate(45 270 118)" fill="#2f8f5b"/>
+  <circle cx="380" cy="118" r="3.5" fill="#2f8f5b"/><circle cx="380" cy="118" r="9" fill="none" stroke="#2f8f5b" stroke-width="1"/>
+  <!-- glyphs: book, broken chain, three marchers, star -->
+  <g fill="none" stroke="#8f8b83" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M58 92 v-16 q6 -3 12 0 q6 -3 12 0 v16 q-6 -3 -12 0 q-6 -3 -12 0z M70 76 v16"/>
+    <rect x="152" y="80" width="16" height="9" rx="4.5"/><path d="M178 80.5 h-3 a4.5 4.5 0 0 1 0 9 h3" transform="translate(4 0)"/><path d="M171 78 l2 -3 M171 92 l2 3"/>
+    <path d="M262 92 v-10 M270 92 v-12 M278 92 v-10"/><circle cx="262" cy="78" r="2"/><circle cx="270" cy="76" r="2"/><circle cx="278" cy="78" r="2"/>
+  </g>
+  <path d="M380 76 l2.4 6 6.4 .4 -5 4 1.6 6.2 -5.4 -3.5 -5.4 3.5 1.6 -6.2 -5 -4 6.4 -.4z" fill="none" stroke="#2f8f5b" stroke-width="1.2" stroke-linejoin="round"/>
+  <g font-family="'DM Serif Display', Georgia, serif" font-size="15" text-anchor="middle" fill="#e9e6df">
+    <text x="70" y="146">1619</text><text x="170" y="146">1865</text><text x="270" y="146">1964</text><text x="380" y="146" fill="#2f8f5b">Today</text>
+  </g>
+</svg>
+      <div class="txt"><h2>American History</h2><p>Walk the timeline: people, places and moments from 1619 to today.</p><div class="go">Open the timeline →</div></div>
+    </a>
+
+    <!-- 2: Hot 16 — rap & hip hop -->
+    <a class="tile" data-page="hot-16" href="#" aria-label="Hot 16 rap and hip hop analyzer">
+      <svg class="art" viewBox="0 0 480 210" role="img" aria-hidden="true">
+  <rect width="480" height="210" fill="#0b0b0b"/>
+  <g transform="translate(372 105)">
+    <circle r="88" fill="#101010" stroke="#2c2c2c" stroke-width="1"/><circle r="30" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="36" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="42" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="48" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="54" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="60" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="66" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="72" fill="none" stroke="#1d1d1d" stroke-width="1"/><circle r="78" fill="none" stroke="#1d1d1d" stroke-width="1"/>
+    <path d="M-62 -40 A74 74 0 0 1 -20 -71" fill="none" stroke="#3a3a3a" stroke-width="1.5" stroke-linecap="round"/>
+    <circle r="24" fill="#5c1410"/><circle r="24" fill="none" stroke="#b3261e" stroke-width="1"/><circle r="2.5" fill="#0b0b0b"/>
+  </g>
+  <path d="M462 22 L430 40 L398 92" fill="none" stroke="#8f8b83" stroke-width="1.5" stroke-linecap="round"/><circle cx="462" cy="22" r="4" fill="none" stroke="#8f8b83" stroke-width="1.2"/>
+  <line x1="36" y1="140" x2="232" y2="140" stroke="#222" stroke-width="1"/>
+  <g fill="#2f8f5b"><rect x="40" y="135.0" width="3" height="10" rx="1.5"/><rect x="52" y="131.0" width="3" height="18" rx="1.5"/><rect x="64" y="127.0" width="3" height="26" rx="1.5"/><rect x="76" y="133.0" width="3" height="14" rx="1.5"/><rect x="88" y="123.0" width="3" height="34" rx="1.5"/><rect x="100" y="129.0" width="3" height="22" rx="1.5"/><rect x="112" y="120.0" width="3" height="40" rx="1.5"/><rect x="124" y="126.0" width="3" height="28" rx="1.5"/><rect x="136" y="117.0" width="3" height="46" rx="1.5"/><rect x="148" y="125.0" width="3" height="30" rx="1.5"/><rect x="160" y="121.0" width="3" height="38" rx="1.5"/><rect x="172" y="130.0" width="3" height="20" rx="1.5"/><rect x="184" y="124.0" width="3" height="32" rx="1.5"/><rect x="196" y="132.0" width="3" height="16" rx="1.5"/><rect x="208" y="128.0" width="3" height="24" rx="1.5"/><rect x="220" y="134.0" width="3" height="12" rx="1.5"/></g>
+  <text x="36" y="70" font-family="'DM Serif Display', Georgia, serif" font-size="44" fill="#e9e6df">16</text>
+  <text x="88" y="68" font-family="Inter, system-ui, sans-serif" font-size="10" letter-spacing="3" fill="#8f8b83">BARS</text>
+</svg>
+      <div class="txt"><h2>Hot 16</h2><p>Rap & hip hop lyric analyzer: score any 16 bars against the legends.</p><div class="go">Analyze a verse →</div></div>
+    </a>
+
+    <!-- 3: The Culture Tree -->
+    <a class="tile" data-page="culture-tree" href="#" aria-label="The Culture Tree">
+      <svg class="art" viewBox="0 0 480 210" role="img" aria-hidden="true">
+  <rect width="480" height="210" fill="#0b0b0b"/>
+  <line x1="60" y1="140" x2="420" y2="140" stroke="#2e2e2e" stroke-width="1"/>
+  <g stroke-linecap="round"><line x1="240.0" y1="140.0" x2="240.0" y2="154.0" stroke="#b3261e" stroke-width="1.60"/><line x1="240.0" y1="154.0" x2="244.7" y2="162.9" stroke="#b3261e" stroke-width="1.12"/><line x1="244.7" y1="162.9" x2="250.6" y2="167.1" stroke="#b3261e" stroke-width="0.78"/><line x1="250.6" y1="167.1" x2="255.8" y2="167.8" stroke="#b3261e" stroke-width="0.60"/><line x1="255.8" y1="167.8" x2="259.3" y2="166.5" stroke="#b3261e" stroke-width="0.60"/><line x1="259.3" y1="166.5" x2="261.1" y2="164.5" stroke="#b3261e" stroke-width="0.60"/><line x1="259.3" y1="166.5" x2="262.0" y2="166.7" stroke="#b3261e" stroke-width="0.60"/><line x1="255.8" y1="167.8" x2="258.9" y2="169.8" stroke="#b3261e" stroke-width="0.60"/><line x1="258.9" y1="169.8" x2="261.6" y2="170.1" stroke="#b3261e" stroke-width="0.60"/><line x1="258.9" y1="169.8" x2="260.4" y2="172.1" stroke="#b3261e" stroke-width="0.60"/><line x1="250.6" y1="167.1" x2="253.2" y2="171.6" stroke="#b3261e" stroke-width="0.60"/><line x1="253.2" y1="171.6" x2="256.4" y2="173.7" stroke="#b3261e" stroke-width="0.60"/><line x1="256.4" y1="173.7" x2="259.1" y2="173.9" stroke="#b3261e" stroke-width="0.60"/><line x1="256.4" y1="173.7" x2="257.8" y2="176.0" stroke="#b3261e" stroke-width="0.60"/><line x1="253.2" y1="171.6" x2="253.5" y2="175.4" stroke="#b3261e" stroke-width="0.60"/><line x1="253.5" y1="175.4" x2="254.9" y2="177.7" stroke="#b3261e" stroke-width="0.60"/><line x1="253.5" y1="175.4" x2="252.5" y2="177.9" stroke="#b3261e" stroke-width="0.60"/><line x1="244.7" y1="162.9" x2="244.9" y2="170.2" stroke="#b3261e" stroke-width="0.78"/><line x1="244.9" y1="170.2" x2="247.5" y2="174.7" stroke="#b3261e" stroke-width="0.60"/><line x1="247.5" y1="174.7" x2="250.7" y2="176.8" stroke="#b3261e" stroke-width="0.60"/><line x1="250.7" y1="176.8" x2="253.4" y2="177.0" stroke="#b3261e" stroke-width="0.60"/><line x1="250.7" y1="176.8" x2="252.1" y2="179.1" stroke="#b3261e" stroke-width="0.60"/><line x1="247.5" y1="174.7" x2="247.8" y2="178.5" stroke="#b3261e" stroke-width="0.60"/><line x1="247.8" y1="178.5" x2="249.3" y2="180.8" stroke="#b3261e" stroke-width="0.60"/><line x1="247.8" y1="178.5" x2="246.9" y2="181.0" stroke="#b3261e" stroke-width="0.60"/><line x1="244.9" y1="170.2" x2="242.9" y2="175.0" stroke="#b3261e" stroke-width="0.60"/><line x1="242.9" y1="175.0" x2="243.2" y2="178.8" stroke="#b3261e" stroke-width="0.60"/><line x1="243.2" y1="178.8" x2="244.6" y2="181.1" stroke="#b3261e" stroke-width="0.60"/><line x1="243.2" y1="178.8" x2="242.3" y2="181.3" stroke="#b3261e" stroke-width="0.60"/><line x1="242.9" y1="175.0" x2="240.1" y2="177.5" stroke="#b3261e" stroke-width="0.60"/><line x1="240.1" y1="177.5" x2="239.2" y2="180.1" stroke="#b3261e" stroke-width="0.60"/><line x1="240.1" y1="177.5" x2="237.5" y2="178.3" stroke="#b3261e" stroke-width="0.60"/><line x1="240.0" y1="154.0" x2="235.7" y2="163.1" stroke="#b3261e" stroke-width="1.12"/><line x1="235.7" y1="163.1" x2="236.0" y2="170.4" stroke="#b3261e" stroke-width="0.78"/><line x1="236.0" y1="170.4" x2="238.6" y2="174.9" stroke="#b3261e" stroke-width="0.60"/><line x1="238.6" y1="174.9" x2="241.8" y2="176.9" stroke="#b3261e" stroke-width="0.60"/><line x1="241.8" y1="176.9" x2="244.5" y2="177.2" stroke="#b3261e" stroke-width="0.60"/><line x1="241.8" y1="176.9" x2="243.2" y2="179.2" stroke="#b3261e" stroke-width="0.60"/><line x1="238.6" y1="174.9" x2="238.9" y2="178.7" stroke="#b3261e" stroke-width="0.60"/><line x1="238.9" y1="178.7" x2="240.3" y2="181.0" stroke="#b3261e" stroke-width="0.60"/><line x1="238.9" y1="178.7" x2="237.9" y2="181.2" stroke="#b3261e" stroke-width="0.60"/><line x1="236.0" y1="170.4" x2="234.0" y2="175.2" stroke="#b3261e" stroke-width="0.60"/><line x1="234.0" y1="175.2" x2="234.3" y2="178.9" stroke="#b3261e" stroke-width="0.60"/><line x1="234.3" y1="178.9" x2="235.7" y2="181.2" stroke="#b3261e" stroke-width="0.60"/><line x1="234.3" y1="178.9" x2="233.3" y2="181.5" stroke="#b3261e" stroke-width="0.60"/><line x1="234.0" y1="175.2" x2="231.2" y2="177.7" stroke="#b3261e" stroke-width="0.60"/><line x1="231.2" y1="177.7" x2="230.2" y2="180.2" stroke="#b3261e" stroke-width="0.60"/><line x1="231.2" y1="177.7" x2="228.6" y2="178.5" stroke="#b3261e" stroke-width="0.60"/><line x1="235.7" y1="163.1" x2="230.1" y2="167.7" stroke="#b3261e" stroke-width="0.78"/><line x1="230.1" y1="167.7" x2="228.1" y2="172.6" stroke="#b3261e" stroke-width="0.60"/><line x1="228.1" y1="172.6" x2="228.4" y2="176.3" stroke="#b3261e" stroke-width="0.60"/><line x1="228.4" y1="176.3" x2="229.8" y2="178.6" stroke="#b3261e" stroke-width="0.60"/><line x1="228.4" y1="176.3" x2="227.4" y2="178.8" stroke="#b3261e" stroke-width="0.60"/><line x1="228.1" y1="172.6" x2="225.3" y2="175.1" stroke="#b3261e" stroke-width="0.60"/><line x1="225.3" y1="175.1" x2="224.3" y2="177.6" stroke="#b3261e" stroke-width="0.60"/><line x1="225.3" y1="175.1" x2="222.7" y2="175.8" stroke="#b3261e" stroke-width="0.60"/><line x1="230.1" y1="167.7" x2="225.1" y2="169.0" stroke="#b3261e" stroke-width="0.60"/><line x1="225.1" y1="169.0" x2="222.2" y2="171.6" stroke="#b3261e" stroke-width="0.60"/><line x1="222.2" y1="171.6" x2="221.3" y2="174.1" stroke="#b3261e" stroke-width="0.60"/><line x1="222.2" y1="171.6" x2="219.7" y2="172.3" stroke="#b3261e" stroke-width="0.60"/><line x1="225.1" y1="169.0" x2="221.4" y2="168.3" stroke="#b3261e" stroke-width="0.60"/><line x1="221.4" y1="168.3" x2="218.8" y2="169.1" stroke="#b3261e" stroke-width="0.60"/><line x1="221.4" y1="168.3" x2="219.2" y2="166.7" stroke="#b3261e" stroke-width="0.60"/></g>
+  <line x1="240" y1="140" x2="240" y2="96" stroke="#e9e6df" stroke-width="3" stroke-linecap="round"/>
+  <g stroke-linecap="round"><line x1="240.0" y1="96.0" x2="240.0" y2="74.0" stroke="#2f8f5b" stroke-width="2.20"/><line x1="240.0" y1="74.0" x2="232.7" y2="60.0" stroke="#2f8f5b" stroke-width="1.54"/><line x1="232.7" y1="60.0" x2="223.3" y2="53.4" stroke="#2f8f5b" stroke-width="1.08"/><line x1="223.3" y1="53.4" x2="215.2" y2="52.3" stroke="#2f8f5b" stroke-width="0.75"/><line x1="215.2" y1="52.3" x2="209.6" y2="54.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="209.6" y1="54.4" x2="206.8" y2="57.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="206.8" y1="57.5" x2="206.0" y2="60.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="206.8" y1="57.5" x2="203.9" y2="58.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="209.6" y1="54.4" x2="205.4" y2="54.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="205.4" y1="54.0" x2="202.6" y2="55.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="205.4" y1="54.0" x2="202.8" y2="52.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="215.2" y1="52.3" x2="210.2" y2="49.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="210.2" y1="49.1" x2="206.0" y2="48.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="206.0" y1="48.8" x2="203.2" y2="49.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="206.0" y1="48.8" x2="203.3" y2="47.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="210.2" y1="49.1" x2="208.0" y2="45.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="208.0" y1="45.5" x2="205.3" y2="44.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="208.0" y1="45.5" x2="207.6" y2="42.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="223.3" y1="53.4" x2="219.3" y2="46.3" stroke="#2f8f5b" stroke-width="0.75"/><line x1="219.3" y1="46.3" x2="214.3" y2="43.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="214.3" y1="43.1" x2="210.0" y2="42.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="210.0" y1="42.7" x2="207.2" y2="43.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="210.0" y1="42.7" x2="207.4" y2="41.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="214.3" y1="43.1" x2="212.0" y2="39.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="212.0" y1="39.5" x2="209.4" y2="37.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="212.0" y1="39.5" x2="211.7" y2="36.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="219.3" y1="46.3" x2="218.8" y2="40.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="218.8" y1="40.4" x2="216.5" y2="36.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="216.5" y1="36.8" x2="213.9" y2="35.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="216.5" y1="36.8" x2="216.2" y2="33.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="218.8" y1="40.4" x2="220.3" y2="36.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="220.3" y1="36.4" x2="219.9" y2="33.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="220.3" y1="36.4" x2="222.5" y2="34.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="232.7" y1="60.0" x2="232.2" y2="48.6" stroke="#2f8f5b" stroke-width="1.08"/><line x1="232.2" y1="48.6" x2="228.1" y2="41.4" stroke="#2f8f5b" stroke-width="0.75"/><line x1="228.1" y1="41.4" x2="223.2" y2="38.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="223.2" y1="38.2" x2="218.9" y2="37.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="218.9" y1="37.8" x2="216.1" y2="39.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="218.9" y1="37.8" x2="216.3" y2="36.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="223.2" y1="38.2" x2="220.9" y2="34.6" stroke="#2f8f5b" stroke-width="0.60"/><line x1="220.9" y1="34.6" x2="218.3" y2="33.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="220.9" y1="34.6" x2="220.5" y2="31.6" stroke="#2f8f5b" stroke-width="0.60"/><line x1="228.1" y1="41.4" x2="227.7" y2="35.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="227.7" y1="35.5" x2="225.4" y2="31.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="225.4" y1="31.9" x2="222.8" y2="30.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="225.4" y1="31.9" x2="225.0" y2="28.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="227.7" y1="35.5" x2="229.2" y2="31.6" stroke="#2f8f5b" stroke-width="0.60"/><line x1="229.2" y1="31.6" x2="228.8" y2="28.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="229.2" y1="31.6" x2="231.4" y2="29.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="232.2" y1="48.6" x2="235.4" y2="41.0" stroke="#2f8f5b" stroke-width="0.75"/><line x1="235.4" y1="41.0" x2="235.0" y2="35.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="235.0" y1="35.1" x2="232.7" y2="31.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="232.7" y1="31.5" x2="230.1" y2="29.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="232.7" y1="31.5" x2="232.3" y2="28.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="235.0" y1="35.1" x2="236.5" y2="31.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="236.5" y1="31.1" x2="236.1" y2="28.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="236.5" y1="31.1" x2="238.7" y2="29.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="235.4" y1="41.0" x2="239.8" y2="37.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="239.8" y1="37.0" x2="241.3" y2="33.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="241.3" y1="33.1" x2="241.0" y2="30.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="241.3" y1="33.1" x2="243.5" y2="30.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="239.8" y1="37.0" x2="243.9" y2="35.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="243.9" y1="35.8" x2="246.1" y2="33.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="243.9" y1="35.8" x2="246.9" y2="36.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="240.0" y1="74.0" x2="246.7" y2="59.7" stroke="#2f8f5b" stroke-width="1.54"/><line x1="246.7" y1="59.7" x2="246.3" y2="48.3" stroke="#2f8f5b" stroke-width="1.08"/><line x1="246.3" y1="48.3" x2="242.2" y2="41.1" stroke="#2f8f5b" stroke-width="0.75"/><line x1="242.2" y1="41.1" x2="237.2" y2="38.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="237.2" y1="38.0" x2="233.0" y2="37.6" stroke="#2f8f5b" stroke-width="0.60"/><line x1="233.0" y1="37.6" x2="230.2" y2="38.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="233.0" y1="37.6" x2="230.4" y2="36.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="237.2" y1="38.0" x2="235.0" y2="34.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="235.0" y1="34.3" x2="232.3" y2="32.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="235.0" y1="34.3" x2="234.6" y2="31.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="242.2" y1="41.1" x2="241.7" y2="35.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="241.7" y1="35.3" x2="239.5" y2="31.6" stroke="#2f8f5b" stroke-width="0.60"/><line x1="239.5" y1="31.6" x2="236.8" y2="30.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="239.5" y1="31.6" x2="239.1" y2="28.6" stroke="#2f8f5b" stroke-width="0.60"/><line x1="241.7" y1="35.3" x2="243.2" y2="31.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="243.2" y1="31.3" x2="242.9" y2="28.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="243.2" y1="31.3" x2="245.4" y2="29.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="246.3" y1="48.3" x2="249.5" y2="40.7" stroke="#2f8f5b" stroke-width="0.75"/><line x1="249.5" y1="40.7" x2="249.0" y2="34.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="249.0" y1="34.8" x2="246.8" y2="31.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="246.8" y1="31.2" x2="244.1" y2="29.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="246.8" y1="31.2" x2="246.4" y2="28.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="249.0" y1="34.8" x2="250.5" y2="30.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="250.5" y1="30.8" x2="250.1" y2="27.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="250.5" y1="30.8" x2="252.7" y2="28.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="249.5" y1="40.7" x2="253.9" y2="36.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="253.9" y1="36.8" x2="255.4" y2="32.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="255.4" y1="32.8" x2="255.0" y2="29.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="255.4" y1="32.8" x2="257.6" y2="30.6" stroke="#2f8f5b" stroke-width="0.60"/><line x1="253.9" y1="36.8" x2="258.0" y2="35.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="258.0" y1="35.5" x2="260.2" y2="33.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="258.0" y1="35.5" x2="261.0" y2="36.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="246.7" y1="59.7" x2="255.5" y2="52.4" stroke="#2f8f5b" stroke-width="1.08"/><line x1="255.5" y1="52.4" x2="258.7" y2="44.8" stroke="#2f8f5b" stroke-width="0.75"/><line x1="258.7" y1="44.8" x2="258.3" y2="38.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="258.3" y1="38.9" x2="256.0" y2="35.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="256.0" y1="35.3" x2="253.4" y2="33.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="256.0" y1="35.3" x2="255.6" y2="32.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="258.3" y1="38.9" x2="259.8" y2="35.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="259.8" y1="35.0" x2="259.4" y2="31.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="259.8" y1="35.0" x2="262.0" y2="32.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="258.7" y1="44.8" x2="263.1" y2="40.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="263.1" y1="40.9" x2="264.6" y2="36.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="264.6" y1="36.9" x2="264.3" y2="33.9" stroke="#2f8f5b" stroke-width="0.60"/><line x1="264.6" y1="36.9" x2="266.8" y2="34.8" stroke="#2f8f5b" stroke-width="0.60"/><line x1="263.1" y1="40.9" x2="267.2" y2="39.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="267.2" y1="39.7" x2="269.4" y2="37.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="267.2" y1="39.7" x2="270.2" y2="40.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="255.5" y1="52.4" x2="263.5" y2="50.4" stroke="#2f8f5b" stroke-width="0.75"/><line x1="263.5" y1="50.4" x2="267.9" y2="46.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="267.9" y1="46.4" x2="269.4" y2="42.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="269.4" y1="42.4" x2="269.0" y2="39.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="269.4" y1="42.4" x2="271.6" y2="40.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="267.9" y1="46.4" x2="272.0" y2="45.2" stroke="#2f8f5b" stroke-width="0.60"/><line x1="272.0" y1="45.2" x2="274.2" y2="43.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="272.0" y1="45.2" x2="275.0" y2="45.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="263.5" y1="50.4" x2="269.3" y2="51.5" stroke="#2f8f5b" stroke-width="0.60"/><line x1="269.3" y1="51.5" x2="273.4" y2="50.3" stroke="#2f8f5b" stroke-width="0.60"/><line x1="273.4" y1="50.3" x2="275.6" y2="48.1" stroke="#2f8f5b" stroke-width="0.60"/><line x1="273.4" y1="50.3" x2="276.4" y2="50.7" stroke="#2f8f5b" stroke-width="0.60"/><line x1="269.3" y1="51.5" x2="272.7" y2="54.0" stroke="#2f8f5b" stroke-width="0.60"/><line x1="272.7" y1="54.0" x2="275.8" y2="54.4" stroke="#2f8f5b" stroke-width="0.60"/><line x1="272.7" y1="54.0" x2="274.2" y2="56.7" stroke="#2f8f5b" stroke-width="0.60"/></g>
+  <g font-family="Inter, system-ui, sans-serif" font-size="10" letter-spacing="3" fill="#8f8b83">
+    <text x="384" y="52">CROWN</text><text x="384" y="118">TRUNK</text><text x="384" y="182">ROOTS</text>
+  </g>
+  <g stroke="#2a2a2a" stroke-width="1"><line x1="320" y1="48" x2="376" y2="48"/><line x1="252" y1="114" x2="376" y2="114"/><line x1="300" y1="178" x2="376" y2="178"/></g>
+</svg>
+      <div class="txt"><h2>The Culture Tree</h2><p>Roots, trunk and crown: how a people survive, make meaning and pass their identity forward.</p><div class="go">Explore the tree →</div></div>
+    </a>
+
+    <!-- 4: Red Carpet — fashion designers -->
+    <a class="tile" data-page="red-carpet" href="#" aria-label="Red Carpet">
+      <svg class="art" viewBox="0 0 480 210" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="rcSpot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".10"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="rcCarpet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a0a08"/><stop offset="1" stop-color="#6e1712"/></linearGradient>
+  </defs>
+  <rect width="480" height="210" fill="#0b0b0b"/>
+  <polygon points="214,0 266,0 360,210 120,210" fill="url(#rcSpot)"/>
+  <polygon points="226,74 254,74 332,210 148,210" fill="url(#rcCarpet)"/>
+  <g stroke="#0b0b0b" stroke-opacity=".35" stroke-width="1"><line x1="240" y1="74" x2="240" y2="210"/><line x1="233" y1="74" x2="194" y2="210"/><line x1="247" y1="74" x2="286" y2="210"/></g>
+  <line x1="132" y1="196" x2="132" y2="156" stroke="#9b978f" stroke-width="1.5"/><circle cx="132" cy="156" r="2.5" fill="#9b978f"/><line x1="126" y1="196" x2="138" y2="196" stroke="#9b978f" stroke-width="1.5"/><line x1="176" y1="150" x2="176" y2="122" stroke="#9b978f" stroke-width="1.5"/><circle cx="176" cy="122" r="2.5" fill="#9b978f"/><line x1="170" y1="150" x2="182" y2="150" stroke="#9b978f" stroke-width="1.5"/><line x1="348" y1="196" x2="348" y2="156" stroke="#9b978f" stroke-width="1.5"/><circle cx="348" cy="156" r="2.5" fill="#9b978f"/><line x1="342" y1="196" x2="354" y2="196" stroke="#9b978f" stroke-width="1.5"/><line x1="304" y1="150" x2="304" y2="122" stroke="#9b978f" stroke-width="1.5"/><circle cx="304" cy="122" r="2.5" fill="#9b978f"/><line x1="298" y1="150" x2="310" y2="150" stroke="#9b978f" stroke-width="1.5"/>
+  <g fill="none" stroke="#b3261e" stroke-width="1.6"><path d="M132 158 Q156 176 176 124"/><path d="M348 158 Q324 176 304 124"/></g>
+        <!-- model on the carpet: natural crown, brown skin, gold mermaid gown, hand on hip -->
+        <defs>
+          <linearGradient id="gown" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f3cf6a"/><stop offset=".55" stop-color="#e0a526"/><stop offset="1" stop-color="#a8761a"/>
+          </linearGradient>
+        </defs>
+        <!-- afro with a soft gold glow -->
+        <circle cx="240" cy="22" r="12.5" fill="#3b2416" stroke="#e0a526" stroke-opacity=".55" stroke-width="1.2"/>
+        <!-- face + neck -->
+        <ellipse cx="240" cy="28" rx="5.2" ry="6.2" fill="#8a5636"/>
+        <rect x="238.4" y="33" width="3.2" height="6" rx="1.4" fill="#8a5636"/>
+        <!-- gold hoop earrings -->
+        <g fill="none" stroke="#e0a526" stroke-width="1"><circle cx="234.6" cy="31.5" r="1.8"/><circle cx="245.4" cy="31.5" r="1.8"/></g>
+        <!-- arms: left hand on hip, right arm relaxed -->
+        <g fill="none" stroke="#8a5636" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M233.5 41 L227.5 50 L234.5 56"/>
+          <path d="M246.5 41 L250.5 53 L249 63"/>
+        </g>
+        <!-- off-shoulder mermaid gown with a flared hem -->
+        <path d="M233 40.5 C237 38.5 243 38.5 247 40.5 L245.2 56 C244.6 64 246.5 72 251.5 80 C255 86 260.5 90 266 93 L214 93 C219.5 90 225 86 228.5 80 C233.5 72 235.4 64 234.8 56 Z" fill="url(#gown)"/>
+        <!-- gown sheen and folds -->
+        <g fill="none" stroke="#f8e3a0" stroke-opacity=".75" stroke-width="1" stroke-linecap="round">
+          <path d="M238 45 C237 58 237 70 232 84"/><path d="M243 47 C244 60 246 72 252 86"/>
+        </g>
+  <g fill="none" stroke="#e9e6df" stroke-width="1.6" stroke-linecap="round">
+    <path d="M233.5 32 L230.5 45 L234 55"/><path d="M246.5 32 L249.5 45 L246 55"/>
+  </g>
+  <line x1="214" y1="90" x2="266" y2="90" stroke="#e9e6df" stroke-opacity=".25" stroke-width="1"/>
+  <path d="M70 45 v14 M63 52 h14" stroke="#e9e6df" stroke-width=".9" stroke-opacity=".7"/><path d="M410 38 v12 M404 44 h12" stroke="#e9e6df" stroke-width=".9" stroke-opacity=".7"/><path d="M112 92 v8 M108 96 h8" stroke="#e9e6df" stroke-width=".9" stroke-opacity=".7"/><path d="M372 88 v8 M368 92 h8" stroke="#e9e6df" stroke-width=".9" stroke-opacity=".7"/>
+</svg>
+      <div class="txt"><h2>Red Carpet</h2><p>Black American fashion designers in today's news, from denim to couture.</p><div class="go">Walk the carpet →</div></div>
+    </a>
+
+    <!-- 5: American Capitalism — founders, inventors and the wealth gap -->
+    <a class="tile" data-page="american-capitalism" href="#" aria-label="American Capitalism">
+      <svg class="art" viewBox="0 0 480 210" role="img" aria-hidden="true">
+  <rect width="480" height="210" fill="#0b0b0b"/>
+  <g stroke="#1c1c1c" stroke-width="1"><line x1="36" y1="50" x2="444" y2="50"/><line x1="36" y1="95" x2="444" y2="95"/><line x1="36" y1="140" x2="444" y2="140"/></g>
+  <line x1="36" y1="185" x2="444" y2="185" stroke="#333" stroke-width="1"/>
+  <polyline points="40,180 84,179 124,176 160,170 196,160 226,146 252,132 276,118 296,104" fill="none" stroke="#8f8b83" stroke-width="1.2" stroke-linejoin="round"/>
+  <polyline points="40,176 80,174 120,170 160,162 196,150 226,132 252,116 276,94 296,70" fill="none" stroke="#2f8f5b" stroke-width="1.8" stroke-linejoin="round"/>
+  <circle cx="296" cy="70" r="3.5" fill="#2f8f5b"/><circle cx="296" cy="70" r="8" fill="none" stroke="#2f8f5b" stroke-width="1"/>
+  <!-- the big three -->
+  <rect x="340" y="152" width="22" height="33" fill="#2f8f5b"/>
+  <rect x="372" y="70" width="22" height="115" fill="#2a2a2a" stroke="#3a3a3a" stroke-width="1"/>
+  <rect x="404" y="138" width="22" height="47" fill="#2a2a2a" stroke="#3a3a3a" stroke-width="1"/>
+  <line x1="340" y1="148" x2="362" y2="148" stroke="#b3261e" stroke-width="1.5"/>
+  <!-- coin -->
+  <circle cx="76" cy="84" r="22" fill="none" stroke="#8f8b83" stroke-width="1.2"/><circle cx="76" cy="84" r="17" fill="none" stroke="#2e2e2e" stroke-width="1"/>
+  <text x="76" y="92" text-anchor="middle" font-family="'DM Serif Display', Georgia, serif" font-size="22" fill="#e9e6df">$</text>
+  <g font-family="Inter, system-ui, sans-serif" font-size="10" letter-spacing="3" fill="#8f8b83">
+    <text x="36" y="38">1613</text><text x="396" y="38">TODAY</text>
+  </g>
+</svg>
+      <div class="txt"><h2>American Capitalism</h2><p>Black founders and inventors since 1613, and the wealth gap between White, Black and Hispanic America.</p><div class="go">Open the ledger →</div></div>
+    </a>
+    <!-- 6: I-55 Corridor — newsrooms along Interstate 55 -->
+    <a class="tile" data-page="i-55-corridor" href="#" aria-label="I-55 Corridor">
+      <svg class="art" viewBox="0 0 480 210" role="img" aria-hidden="true">
+  <rect width="480" height="210" fill="#0b0b0b"/>
+  <!-- the road, running north to south through the frame -->
+  <path d="M300 -4 C286 40 318 70 296 110 C276 146 300 176 286 214" fill="none" stroke="#1d1d1d" stroke-width="30" stroke-linecap="round"/>
+  <path d="M300 -4 C286 40 318 70 296 110 C276 146 300 176 286 214" fill="none" stroke="#2a2a2a" stroke-width="22" stroke-linecap="round"/>
+  <path d="M300 -4 C286 40 318 70 296 110 C276 146 300 176 286 214" fill="none" stroke="#e9e6df" stroke-width="1.4" stroke-dasharray="8 10"/>
+  <!-- towns along the way -->
+  <g fill="#8f8b83"><circle cx="322" cy="44" r="2.5"/><circle cx="270" cy="96" r="2.5"/><circle cx="318" cy="150" r="2.5"/></g>
+  <g font-family="Inter, system-ui, sans-serif" font-size="10" letter-spacing="3" fill="#8f8b83">
+    <text x="332" y="48">CHICAGO</text><text x="166" y="100">ST. LOUIS</text><text x="328" y="154">MEMPHIS</text><text x="182" y="196">LAPLACE</text>
+  </g>
+  <!-- broadcast tower with airwaves -->
+  <g transform="translate(396 104)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-9 26 L0 -4 L9 26 M-5.5 15 H5.5 M-3 6 H3" stroke="#e9e6df" stroke-width="1.6"/>
+    <circle cy="-7" r="3" fill="#b3261e" stroke="none"/>
+    <path d="M-12 -16 Q-19 -7 -12 2 M12 -16 Q19 -7 12 2" stroke="#2f8f5b" stroke-width="1.5"/>
+    <path d="M-20 -24 Q-31 -7 -20 10 M20 -24 Q31 -7 20 10" stroke="#2f8f5b" stroke-width="1.2" stroke-opacity=".6"/>
+  </g>
+  <!-- interstate shield -->
+  <g transform="translate(70 70)">
+    <path d="M0 6 Q30 -4 60 6 Q66 38 30 66 Q-6 38 0 6Z" fill="#0b0b0b" stroke="#e9e6df" stroke-width="1.6"/>
+    <path d="M1 7 Q30 -2.6 59 7 L59.6 18 L0.4 18Z" fill="#b3261e"/>
+    <text x="30" y="50" text-anchor="middle" font-family="'DM Serif Display', Georgia, serif" font-size="28" fill="#e9e6df">55</text>
+  </g>
+</svg>
+      <div class="txt"><h2>I-55 Corridor</h2><p>Chicago to LaPlace: the newsrooms, towns and counties within five miles of Interstate 55.</p><div class="go">Travel the corridor →</div></div>
+    </a>
+    <!-- 7: Black Wall Street — three-lane property game -->
+    <a class="tile" data-page="black-monopoly" href="#" aria-label="Black Wall Street game">
+      <svg class="art" viewBox="0 0 480 210" role="img" aria-hidden="true">
+  <rect width="480" height="210" fill="#0b0b0b"/>
+  <!-- the board with its three lanes -->
+  <rect x="44" y="28" width="154" height="154" fill="#101010" stroke="#2c2c2c" stroke-width="1"/>
+  <rect x="68" y="52" width="106" height="106" fill="#0b0b0b" stroke="#2c2c2c" stroke-width="1"/>
+  <rect x="50" y="34" width="142" height="142" fill="none" stroke="#e9e6df" stroke-opacity=".7" stroke-width="1" stroke-dasharray="6 4"/>
+  <rect x="56" y="40" width="130" height="130" fill="none" stroke="#2f8f5b" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <rect x="62" y="46" width="118" height="118" fill="none" stroke="#b3261e" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <circle cx="50" cy="122" r="3.5" fill="#e9e6df"/><circle cx="124" cy="40" r="3.5" fill="#2f8f5b"/><circle cx="180" cy="108" r="3.5" fill="#b3261e"/>
+  <!-- house and hotel -->
+  <path d="M100 128 l8 -7 l8 7 v10 h-16z" fill="#2f8f5b"/>
+  <path d="M124 130 l9 -9 l9 9 v12 h-18z" fill="#b3261e"/>
+  <line x1="92" y1="142" x2="150" y2="142" stroke="#2c2c2c" stroke-width="1"/>
+  <text x="121" y="94" text-anchor="middle" font-family="'DM Serif Display', Georgia, serif" font-size="22" fill="#e9e6df">$</text>
+  <!-- three dice: the lane dice and two number dice -->
+  <g transform="rotate(-8 273 101)"><rect x="250" y="78" width="46" height="46" rx="8" fill="#2f8f5b"/>
+    <text x="273" y="107" text-anchor="middle" font-family="'DM Serif Display', Georgia, serif" font-size="17" fill="#e9e6df">MG</text></g>
+  <g transform="rotate(5 335 101)"><rect x="312" y="78" width="46" height="46" rx="8" fill="#0b0b0b" stroke="#e9e6df" stroke-width="1.4"/>
+    <g fill="#e9e6df"><circle cx="323" cy="89" r="3.5"/><circle cx="347" cy="89" r="3.5"/><circle cx="335" cy="101" r="3.5"/><circle cx="323" cy="113" r="3.5"/><circle cx="347" cy="113" r="3.5"/></g></g>
+  <g transform="rotate(-4 397 101)"><rect x="374" y="78" width="46" height="46" rx="8" fill="#0b0b0b" stroke="#e9e6df" stroke-width="1.4"/>
+    <g fill="#b3261e"><circle cx="386" cy="90" r="3.5"/><circle cx="397" cy="101" r="3.5"/><circle cx="408" cy="112" r="3.5"/></g></g>
+  <g font-family="Inter, system-ui, sans-serif" font-size="10" letter-spacing="3" fill="#8f8b83">
+    <text x="250" y="56">BTW · MG · WEB</text><text x="250" y="160">3 LANES · 3 DICE</text>
+  </g>
+</svg>
+      <div class="txt"><h2>Black Wall Street</h2><p>A property game across Black America: three lanes, three dice, and the choices Washington, Garvey and Du Bois faced.</p><div class="go">Play the game →</div></div>
+    </a>
+  </div>
+</main>
+<div class="band"></div>
+
+<script>
+  // Optional hardening: put your site's address here, e.g. 'https://www.mysite.com'
+  const SITE_ORIGIN = '*';
+  // Each button tells the page code (agoMenu_page-code.js) which page to open.
+  document.querySelectorAll('a.tile[data-page]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      window.parent.postMessage({ source: 'ago', type: 'nav', page: a.dataset.page }, SITE_ORIGIN);
+    });
+  });
+
+  // Live visitor counter: the page code sends { source: 'agoPage', type: 'visitors', count }.
+  const live = document.getElementById('live'), liveN = document.getElementById('liveN'), liveW = document.getElementById('liveW');
+  window.addEventListener('message', e => {
+    const m = e.data;
+    if (!m || m.source !== 'agoPage' || m.type !== 'visitors' || typeof m.count !== 'number') return;
+    const changed = liveN.textContent !== String(m.count);
+    liveN.textContent = m.count.toLocaleString();
+    liveW.textContent = m.count === 1 ? 'visitor' : 'visitors';
+    live.hidden = false;
+    if (changed) { liveN.classList.add('bump'); setTimeout(() => liveN.classList.remove('bump'), 1200); }
+  });
+  window.parent.postMessage({ source: 'ago', type: 'ready' }, SITE_ORIGIN);   // ask for the count once loaded
+</script>
+<!-- AGO shell: shared back button, members, brand frame and "More from AGO" links -->
+<script src="https://norsounorllc2026-lgtm.github.io/ago/shell/ago-shell.js" data-page="american-griot-one" data-footer="off"></script>
+</body>
+</html>

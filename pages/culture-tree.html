@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Culture Tree</title>
+<!--
+  The Culture Tree — Wix "Embed HTML" version (connect-the-dots edition)
+  ------------------------------------------------------------------
+  Paste this whole file into an Embed HTML element on the culture-tree page
+  and give that element the ID  #cultureTree.
+  "← American Griot One" sends { source: 'cultureTree', type: 'nav' } to the
+  page code (CultureTree.js), which opens /american-griot-one.
+  Visitors pick one point in the roots, one in the trunk and one in the crown;
+  the trace lights up once all three are picked and gets its own title.
+  Animation controls: the "Animation" button on the tree (tree motion, trace flow, speed).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3eee5; --ink:#211812; --muted:#64554a; --card:#fbf8f2; --line:#ddd1bf;
+    --gold:#a8782a; --gold-soft:#efe2c6;
+    --roots:#7a5233; --trunk:#4a3324; --crown:#2e5238;
+    --glow:#d9a441;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;line-height:1.5}
+  button{font:inherit;color:inherit}
+  .wrap{max-width:820px;margin:0 auto;padding:18px 16px 40px}
+  .back{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;padding:7px 14px;font-size:14px;font-weight:600;
+    color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;cursor:pointer}
+  .back:hover{border-color:var(--gold)}
+  .back[hidden]{display:none}
+  header{text-align:center}
+  .eyebrow{letter-spacing:.2em;text-transform:uppercase;font-size:11.5px;color:var(--gold);font-weight:700}
+  h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(30px,6vw,44px);line-height:1.1;margin:6px 0 10px;letter-spacing:-.01em}
+  .lede{font-family:Fraunces,Georgia,serif;font-style:italic;color:var(--muted);font-size:clamp(15px,2.6vw,18px);max-width:560px;margin:0 auto}
+  .hint{font-size:13.5px;color:var(--muted);margin:12px auto 0;max-width:520px}
+
+  /* ---------- pick progress ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:600px;margin:16px auto 0}
+  .slot{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 10px;text-align:left;cursor:pointer;min-width:0;transition:border-color .2s,background .2s}
+  .slot .s-k{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+  .slot .s-k i{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--line);color:#fff;font-style:normal;font-size:11px;letter-spacing:0}
+  .slot .s-v{display:block;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:15px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .slot.empty .s-v{color:var(--muted);font-family:Inter,sans-serif;font-weight:500;font-size:13px}
+  .slot.now{border-color:var(--glow);background:#fbf1dc}
+  .slot.now .s-k i{background:var(--glow)}
+  .slot.done .s-k i{background:var(--ink)}
+
+  /* ---------- tree ---------- */
+  .tree-box{max-width:600px;margin:10px auto 0;position:relative}
+  #tree{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line);box-shadow:0 8px 24px rgba(33,24,18,.12)}
+  .zone{transition:opacity .45s ease}
+  #tree.dim .zone:not(.lit){opacity:.35}
+  .cat-pill{cursor:pointer;outline:none}
+  .cat-pill:hover rect,.cat-pill:focus-visible rect{stroke-width:2.5}
+  .ptxt{font:600 13.5px Fraunces,Georgia,serif;fill:var(--ink)}
+  .pnum{font:700 12px Inter,system-ui,sans-serif;fill:#fff}
+  .sway{transform-box:view-box;transform-origin:300px 320px}
+  .motion .sway{animation:sway 7s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:rotate(-.45deg)}50%{transform:rotate(.45deg)}}
+  .flow-path{fill:none;stroke:var(--glow);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;opacity:.95;pointer-events:none}
+  .flow-halo{fill:none;stroke:rgba(217,164,65,.3);stroke-width:13;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+  .pulse{fill:#fff6dc;stroke:var(--glow);stroke-width:2.5;pointer-events:none;filter:drop-shadow(0 0 5px rgba(217,164,65,.9))}
+
+  /* pick points */
+  .pick{cursor:pointer;outline:none}
+  .pick .hit{fill:transparent}
+  .pick .core{fill:#fbf3df;fill-opacity:.7;stroke:#1c140e;stroke-opacity:.45;stroke-width:1.2;transition:fill .2s,stroke .2s,opacity .3s}
+  .pick .ring{fill:none;stroke:var(--glow);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
+  .pick.future{pointer-events:none}
+  .pick.future .core{opacity:.35}
+  .pick.active .core{fill:#fff6dc;fill-opacity:1;stroke:var(--glow);stroke-opacity:1;stroke-width:2.5}
+  .pick.active .ring{opacity:.8}
+  .motion .pick.active .ring{animation:ring 1.8s ease-out infinite}
+  @keyframes ring{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.9);opacity:0}}
+  .pick:hover .core,.pick:focus-visible .core{stroke:var(--glow);stroke-opacity:1;stroke-width:3}
+  .pick.picked .core{fill:var(--glow);fill-opacity:1;stroke:#fff;stroke-opacity:1;stroke-width:2.5}
+  .plab{pointer-events:none;opacity:0;transition:opacity .25s}
+  .plab.show{opacity:1}
+  .plab rect{fill:#fbf8f2;fill-opacity:.95;stroke-width:1.2}
+  .plab text{font:600 13.5px Inter,system-ui,sans-serif;fill:var(--ink)}
+  .plab.chosen rect{fill:#f7e6bd;stroke:var(--gold);stroke-width:1.6}
+
+  /* controls on the tree */
+  .toolbar{max-width:600px;margin:8px auto 0;position:relative;display:flex;align-items:center;gap:8px;min-height:36px}
+  .ctl-btn{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.35);
+    background:rgba(33,24,18,.78);color:#fff;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;backdrop-filter:blur(4px)}
+  .ctl-btn:hover{background:rgba(33,24,18,.92)}
+  .ctl-btn .dot{width:8px;height:8px;border-radius:50%;background:#7fbf7a}
+  .ctl-btn.off .dot{background:#b9a99a}
+  .panel{position:absolute;top:42px;right:0;width:236px;background:var(--card);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 12px 30px rgba(0,0,0,.22);padding:12px 14px;display:none;z-index:5}
+  .panel.open{display:block;animation:pop .16s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .panel h4{margin:0 0 8px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid #eee4d4;font-size:14px}
+  .row:first-of-type{border-top:0}
+  .switch{position:relative;width:42px;height:24px;border-radius:999px;border:0;background:#cbbfae;cursor:pointer;flex:none;transition:background .2s}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .switch[aria-checked="true"]{background:var(--crown)}
+  .switch[aria-checked="true"]::after{transform:translateX(18px)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{border:0;background:#fff;padding:4px 8px;font-size:12.5px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  .active-bar{display:none;align-items:center;gap:6px;min-width:0;
+    background:rgba(33,24,18,.9);color:#fff;border-radius:999px;padding:4px 5px 4px 14px;font-size:12.5px;font-weight:600;
+    white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .active-bar.show{display:flex;animation:pop .16s ease}
+  .active-bar span{overflow:hidden;text-overflow:ellipsis;margin-right:4px}
+  .active-bar button{border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:999px;min-width:28px;height:28px;padding:0 8px;cursor:pointer;flex:none;font-size:13px}
+  .active-bar button:hover{background:rgba(255,255,255,.3)}
+
+  /* result card under the tree */
+  .result{max-width:600px;margin:12px auto 0;border:1px solid #cdb27f;border-radius:14px;background:linear-gradient(135deg,#fbf8f2,#f2e7cf);padding:16px 18px}
+  .result[hidden]{display:none}
+  .result .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .result h3{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:24px;line-height:1.15;margin:4px 0 2px}
+  .result .via{font-family:Fraunces,Georgia,serif;font-style:italic;color:var(--muted);margin:0 0 8px}
+  .result .goal{margin:0;font-size:14.5px}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 0}
+  .result .actions{justify-content:flex-start}
+  .btn{border:1px solid var(--ink);background:transparent;border-radius:999px;padding:7px 15px;cursor:pointer;font-weight:600;font-size:14px}
+  .btn:hover{background:var(--ink);color:#fff}
+  .btn.solid{background:var(--ink);color:#fff}
+  .btn.solid:hover{background:#3a2a1f}
+
+  .tiers{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 0}
+  .tier-btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 16px;cursor:pointer;font-weight:600;font-size:14px;
+    display:inline-flex;align-items:center;gap:8px;transition:border-color .15s}
+  .tier-btn i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .tier-btn:hover,.tier-btn:focus-visible{border-color:var(--gold);outline:none}
+
+  /* ---------- sections ---------- */
+  section{margin-top:34px}
+  h2.sec{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(22px,4vw,28px);margin:0 0 4px;text-align:center}
+  .sec-sub{text-align:center;color:var(--muted);font-size:14.5px;margin:0 auto 16px;max-width:520px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .card-btn{text-align:left;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+  .card-btn:hover,.card-btn:focus-visible{border-color:var(--gold);box-shadow:0 6px 18px rgba(33,24,18,.08);outline:none}
+  .card-btn .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .card-btn .t{display:block;font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;margin:2px 0 4px;line-height:1.25}
+  .card-btn .r{font-size:13px;color:var(--muted)}
+  .card-btn.core{border-color:#cdb27f;background:linear-gradient(135deg,#fbf8f2,#f2e7cf)}
+
+  /* ---------- modal ---------- */
+  .overlay{position:absolute;left:0;top:0;width:100%;background:rgba(33,24,18,.55);display:none;z-index:50}
+  .overlay.open{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal{position:absolute;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:min(680px,calc(var(--ago-screen-h, 100vh) - 24px));overflow:auto;
+    background:var(--card);border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.35);padding:22px 20px 20px}
+  .close{position:sticky;top:0;float:right;margin:-8px -6px 0 8px;border:0;background:#ece3d4;border-radius:999px;width:34px;height:34px;font-size:16px;cursor:pointer;z-index:2}
+  .close:hover{background:#e0d3bd}
+  .tag{display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:4px 10px;border-radius:999px;color:#fff}
+  .tag.roots{background:var(--roots)} .tag.trunk{background:var(--trunk)} .tag.crown{background:var(--crown)} .tag.gold{background:var(--gold)}
+  .modal h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:26px;line-height:1.15;margin:10px 0 4px;display:flex;align-items:center;gap:10px}
+  .num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;color:#fff;font:700 16px Inter,sans-serif;flex:none}
+  .q{color:var(--muted);font-style:italic;margin:0 0 14px}
+  .modal h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+  ol.comp{margin:0;padding:0;list-style:none;counter-reset:c}
+  ol.comp li{counter-increment:c;display:flex;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid #ebe1d1}
+  ol.comp li::before{content:counter(c);font:700 13px Inter,sans-serif;color:var(--gold);min-width:16px}
+  .box{border-radius:10px;padding:12px 14px;margin-top:12px}
+  .box b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+  .box p{margin:0}
+  .box.fn{background:#efe8dc}
+  .box.ctx{background:var(--gold-soft)}
+  .chips{display:flex;flex-direction:column;gap:8px}
+  .chip{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:14px}
+  .chip:hover{border-color:var(--gold)}
+  .step{border-left:4px solid;border-radius:8px;background:#fff;padding:12px 14px}
+  .step.roots{border-color:var(--roots)} .step.trunk{border-color:var(--trunk)} .step.crown{border-color:var(--crown)}
+  .step-h{border:0;background:none;padding:0;font-weight:700;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;text-align:left}
+  .step .pt{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;margin:4px 0 0}
+  .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px;font-weight:600}
+  .step ul{margin:4px 0 0;padding-left:18px}
+  .step p{margin:2px 0 0}
+  .arrow{text-align:center;color:var(--gold);font-weight:600;font-size:12.5px;padding:6px 0;letter-spacing:.06em}
+  .meaning{margin:16px 0 0;padding:14px 16px;border-radius:10px;background:var(--ink);color:#f7efe0;font-family:Fraunces,Georgia,serif;font-size:17px;line-height:1.4}
+  .meaning small{display:block;font-family:Inter,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#d9b36a;margin-bottom:4px}
+  .goalbox{margin:10px 0 0;padding:12px 14px;border-radius:10px;background:var(--gold-soft)}
+  .goalbox b{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#6b4a14}
+  .big-quote{font-family:Fraunces,Georgia,serif;font-size:21px;line-height:1.35;margin:12px 0}
+  .modal ul.plain{padding-left:18px}
+  details{border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:8px}
+  summary{cursor:pointer;padding:11px 14px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary .sn{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:50%;background:var(--gold);color:#fff;font-size:13px}
+  summary::after{content:"+";margin-left:auto;color:var(--gold);font-size:20px;line-height:1}
+  details[open] summary::after{content:"−"}
+  details p{margin:0;padding:0 14px 12px 52px;color:#3a2b20}
+  @media (max-width:480px){ .modal{padding:18px 16px} .modal h2{font-size:22px} details p{padding-left:14px} .panel{width:calc(100% - 20px)}
+    .slot{padding:7px 8px} .slot .s-v{font-size:13.5px} }
+  @media (prefers-reduced-motion: reduce){ .motion .sway, .motion .pick.active .ring{animation:none} }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <button class="back" id="backAgo">← American Griot One</button>
+  <header>
+    <div class="eyebrow">An Interactive Framework</div>
+    <h1>The Culture Tree</h1>
+    <p class="lede">Culture is the living blueprint of how a people survive, make meaning, and pass their identity forward.</p>
+    <p class="hint">Connect the dots to trace a path of healing: pick a point in the roots, then the trunk, then the crown. Select a numbered label to read about that part of the tree.</p>
+  </header>
+
+  <div class="steps" id="steps">
+    <button type="button" class="slot" data-slot="roots"><span class="s-k"><i>1</i>Roots</span><span class="s-v"></span></button>
+    <button type="button" class="slot" data-slot="trunk"><span class="s-k"><i>2</i>Trunk</span><span class="s-v"></span></button>
+    <button type="button" class="slot" data-slot="crown"><span class="s-k"><i>3</i>Crown</span><span class="s-v"></span></button>
+  </div>
+
+  <div class="tree-box" id="treeBox">
+    <svg id="tree" viewBox="0 0 600 760" aria-label="Interactive Culture Tree. Pick one point in the roots, one in the trunk and one in the crown to trace a healing path.">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f2ea"/><stop offset="1" stop-color="#e6dccb"/></linearGradient>
+        <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d2b1e"/><stop offset="1" stop-color="#17100b"/></linearGradient>
+        <linearGradient id="barkL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a281c"/><stop offset="1" stop-color="#5a3f2b"/></linearGradient>
+        <linearGradient id="barkR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5e432e"/><stop offset="1" stop-color="#3d2a1d"/></linearGradient>
+        <linearGradient id="rootFill" gradientUnits="userSpaceOnUse" x1="0" y1="454" x2="0" y2="760"><stop offset="0" stop-color="#5a3f2b"/><stop offset=".5" stop-color="#6e5038"/><stop offset="1" stop-color="#7a5b40"/></linearGradient>
+        <radialGradient id="leafL" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#4f7a57"/><stop offset="1" stop-color="#284631"/></radialGradient>
+        <radialGradient id="leafR" cx=".65" cy=".3" r=".8"><stop offset="0" stop-color="#6c7f4b"/><stop offset="1" stop-color="#3b4b2a"/></radialGradient>
+        <clipPath id="halfL"><rect x="0" y="0" width="300" height="760"/></clipPath>
+        <clipPath id="halfR"><rect x="300" y="0" width="300" height="760"/></clipPath>
+        <clipPath id="canopyClip"><path id="canopyClipPath"/></clipPath>
+      </defs>
+
+      <!-- ground and soil -->
+      <rect width="600" height="456" fill="url(#sky)"/>
+      <rect y="454" width="600" height="306" fill="url(#soil)"/>
+      <g stroke="#ffffff" stroke-opacity=".04" stroke-width="2" fill="none" pointer-events="none">
+        <path d="M0,530 C150,522 450,540 600,528"/><path d="M0,620 C200,612 400,630 600,618"/><path d="M0,705 C180,699 420,713 600,703"/>
+      </g>
+      <g id="pebbles" fill="#6b5442" fill-opacity=".35" pointer-events="none"></g>
+
+      <!-- ROOTS -->
+      <g class="zone" data-zone="1"><g id="rootsL" clip-path="url(#halfL)"></g></g>
+      <g class="zone" data-zone="2"><g id="rootsR" clip-path="url(#halfR)"></g></g>
+      <path d="M204,456 C236,454 258,450 268,440 L332,440 C342,450 364,454 396,456 C364,468 334,474 300,474 C266,474 236,468 204,456Z" fill="#45301f" pointer-events="none"/>
+      <path d="M0,455 C120,450 220,458 300,454 C390,450 480,458 600,453" stroke="#5b4630" stroke-width="3" fill="none" pointer-events="none"/>
+
+      <!-- CROWN (behind the trunk top) -->
+      <g class="sway">
+        <path id="canopyBack" fill="#1f3726" pointer-events="none"/>
+        <g id="limbs" fill="none" stroke="#3a281c" stroke-linecap="round" pointer-events="none">
+          <path d="M292,312 C270,270 236,236 182,206" stroke-width="16"/>
+          <path d="M308,312 C330,270 364,236 418,206" stroke-width="16"/>
+          <path d="M296,300 C292,250 284,200 268,150" stroke-width="11"/>
+          <path d="M304,300 C308,250 316,200 332,150" stroke-width="11"/>
+        </g>
+        <g class="zone" data-zone="5">
+          <g clip-path="url(#halfL)"><path id="canopyL" fill="url(#leafL)"/><g clip-path="url(#canopyClip)"><g id="clumpsL"></g>
+            <g fill="none" stroke="#1d3022" stroke-opacity=".5" stroke-linecap="round" pointer-events="none"><path d="M248,236 C228,214 210,200 176,186" stroke-width="4"/><path d="M288,226 C282,196 274,166 258,136" stroke-width="3"/></g></g></g>
+        </g>
+        <g class="zone" data-zone="6">
+          <g clip-path="url(#halfR)"><path id="canopyR" fill="url(#leafR)"/><g clip-path="url(#canopyClip)"><g id="clumpsR"></g>
+            <g fill="none" stroke="#273220" stroke-opacity=".5" stroke-linecap="round" pointer-events="none"><path d="M352,236 C372,214 390,200 424,186" stroke-width="4"/><path d="M312,226 C318,196 326,166 342,136" stroke-width="3"/></g></g></g>
+        </g>
+      </g>
+
+      <!-- TRUNK -->
+      <g class="zone" data-zone="3">
+        <path d="M300,292 L272,292 C270,330 268,372 262,404 C256,430 240,446 214,456 L300,456 Z" fill="url(#barkL)"/>
+        <g stroke="#2b1d13" stroke-opacity=".6" stroke-width="2" fill="none" stroke-linecap="round" pointer-events="none">
+          <path d="M284,304 C282,340 280,380 274,420"/><path d="M292,330 C291,360 290,400 286,446"/><path d="M276,380 C272,410 262,432 244,448"/>
+        </g>
+      </g>
+      <g class="zone" data-zone="4">
+        <path d="M300,292 L328,292 C330,330 332,372 338,404 C344,430 360,446 386,456 L300,456 Z" fill="url(#barkR)"/>
+        <g stroke="#2b1d13" stroke-opacity=".6" stroke-width="2" fill="none" stroke-linecap="round" pointer-events="none">
+          <path d="M316,304 C318,340 320,380 326,420"/><path d="M308,330 C309,360 310,400 314,446"/><path d="M324,380 C328,410 338,432 356,448"/>
+        </g>
+      </g>
+      <line x1="300" y1="296" x2="300" y2="455" stroke="#1d140d" stroke-width="1.5" pointer-events="none"/>
+
+      <g id="cats"></g>
+      <g id="flow"></g>
+      <g id="picks"></g>
+      <g id="labels"></g>
+    </svg>
+  </div>
+
+  <div class="toolbar">
+    <div class="active-bar" id="activeBar" role="status">
+      <span id="activeText"></span>
+      <button type="button" id="pauseBtn" aria-label="Pause the flow">❚❚</button>
+      <button type="button" id="replayBtn" aria-label="Replay the trace">↻</button>
+      <button type="button" id="clearPath" aria-label="Start over">✕</button>
+    </div>
+    <button type="button" class="ctl-btn" id="ctlBtn" aria-expanded="false" aria-controls="ctlPanel"><span class="dot"></span><span id="ctlLabel">Animation</span></button>
+    <div class="panel" id="ctlPanel" role="dialog" aria-label="Animation controls">
+      <h4>Animation</h4>
+      <div class="row"><span>Tree motion</span><button type="button" class="switch" id="swMotion" role="switch" aria-checked="true" aria-label="Tree motion"></button></div>
+      <div class="row"><span>Trace flow</span><button type="button" class="switch" id="swFlow" role="switch" aria-checked="true" aria-label="Trace flow"></button></div>
+      <div class="row"><span>Speed</span><span class="seg" id="speedSeg"><button type="button" data-speed="0.6">Slow</button><button type="button" data-speed="1">Normal</button><button type="button" data-speed="1.6">Fast</button></span></div>
+    </div>
+  </div>
+
+  <div class="result" id="result" hidden aria-live="polite"></div>
+
+  <div class="actions">
+    <button type="button" class="btn" id="randomBtn">Surprise me</button>
+    <button type="button" class="btn" id="resetBtn">Start over</button>
+  </div>
+
+  <div class="tiers">
+    <button class="tier-btn" data-tier="crown"><i style="background:var(--crown)"></i>Crown</button>
+    <button class="tier-btn" data-tier="trunk"><i style="background:var(--trunk)"></i>Trunk</button>
+    <button class="tier-btn" data-tier="roots"><i style="background:var(--roots)"></i>Roots</button>
+  </div>
+
+  <section>
+    <h2 class="sec">The Big Ideas</h2>
+    <p class="sec-sub">The thesis behind the tree, and the rule that governs how it heals.</p>
+    <div class="grid">
+      <button class="card-btn core" data-info="thesis"><span class="k">Central Thesis</span><span class="t">Not absent — fragmented.</span><span class="r">Why the world sees the crown but not the struggle beneath it.</span></button>
+      <button class="card-btn core" data-info="principle"><span class="k">The Master Principle</span><span class="t">The crown can't heal the roots.</span><span class="r">And the roots can't heal without the trunk.</span></button>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">The Global Diaspora Framework</h2>
+    <p class="sec-sub">An 8-slot, census-aligned way of naming the Black diaspora in the United States.</p>
+    <div class="grid">
+      <button class="card-btn" data-info="diaspora"><span class="k">8 Slots</span><span class="t">Census-Aligned Global Diaspora Framework</span><span class="r">From Black Americans and Gullah Geechee to Afro-Oceanic &amp; Afro-Asian Americans.</span></button>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button class="close" id="closeBtn" aria-label="Close">✕</button>
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ---------- back to the landing page (same method as the Hot 16 page) ---------- */
+  var SITE_URL = '';   // optional: your site address, e.g. 'https://www.mysite.com'; leave '' to detect it
+  function siteBase(){
+    if (SITE_URL) return SITE_URL.replace(/\/$/, '');
+    try {
+      var u = new URL(document.referrer);
+      if (/\.wixsite\.com$/.test(u.hostname)) {
+        var seg = u.pathname.split('/').filter(Boolean)[0];
+        return u.origin + (seg ? '/' + seg : '');
+      }
+      return u.origin;
+    } catch (e) { return ''; }
+  }
+  // Ask the page code to open the page; if it doesn't answer, open it directly.
+  function goToPage(slug, message){
+    window.parent.postMessage(message, '*');
+    setTimeout(function(){
+      var base = siteBase(); if (!base) return;
+      var url = base + '/' + slug;
+      try { window.top.location.href = url; } catch (e) { window.open(url, '_top'); }
+    }, 800);
+  }
+  var backBtn = document.getElementById("backAgo");
+  if (window.parent === window) backBtn.hidden = true;      // opened on its own, not inside the site
+  backBtn.addEventListener("click", function(){
+    goToPage("american-griot-one", { source: 'cultureTree', type: 'nav', path: '/american-griot-one' });
+  });
+
+  /* ---------- content from the framework document ---------- */
+  var PIECES = {
+    1:{tier:"roots",title:"Beliefs &amp; Values",q:"What a people believe about life, self, and meaning",
+       comps:["View of self and human worth","Spiritual or metaphysical beliefs","Ideas of right and wrong","Concepts of family and kinship","Relationship to land, ancestry, and time"],
+       fn:"Defines who we are and why we exist.",
+       ctx:"Beliefs were forcibly disrupted, replaced, or criminalized — but fragments survived through spirituality, resilience, and communal identity."},
+    2:{tier:"roots",title:"History &amp; Collective Memory",q:"What a people remember and pass down",
+       comps:["Origin stories","Shared trauma or triumph","Ancestral knowledge","Historical continuity","Collective identity narrative"],
+       fn:"Gives people a shared past and meaning.",
+       ctx:"Memory was interrupted — enslaved people were denied their history, creating generational gaps that still echo today."},
+    3:{tier:"trunk",title:"Social Rules &amp; Norms",q:"How people are expected to behave and relate",
+       comps:["Family roles and hierarchy","Gender expectations","Respect and authority structures","Community responsibility","Conflict resolution methods"],
+       fn:"Holds society together.",
+       ctx:"Slavery, segregation, and mass incarceration disrupted family continuity, forcing adaptive — often informal — social structures."},
+    4:{tier:"trunk",title:"Language &amp; Communication",q:"How meaning is shared and preserved",
+       comps:["Spoken language or dialect","Storytelling traditions","Non-verbal communication","Teaching and learning styles","Cultural symbolism and metaphor"],
+       fn:"Transmits culture between generations.",
+       ctx:"African languages were suppressed, leading to creolization, coded speech, music-based communication, and oral tradition dominance."},
+    5:{tier:"crown",title:"Art, Music &amp; Expression",q:"How culture shows itself",
+       comps:["Music and rhythm","Dance and movement","Visual style and fashion","Humor and storytelling","Innovation and improvisation"],
+       fn:"Emotional release and identity expression.",
+       ctx:"This area flourished because expression couldn't be fully controlled — becoming the most visible part of Black culture worldwide."},
+    6:{tier:"crown",title:"Customs &amp; Traditions",q:"What people do repeatedly and pass down",
+       comps:["Foodways and cooking styles","Celebrations and rituals","Social gatherings","Life milestones (birth, death, coming-of-age)","Community practices"],
+       fn:"Creates continuity and belonging.",
+       ctx:"Many traditions survived in altered or hybrid forms due to forced displacement and cultural blending."}
+  };
+  // short names for each component, used on the tree labels and in trace titles
+  var WORD = {
+    1:["Worth","Spirit","Conscience","Kinship","Land &amp; Lineage"],
+    2:["Origins","Trauma &amp; Triumph","Ancestral Wisdom","Continuity","Identity"],
+    3:["Family Roles","Gender Roles","Respect","Responsibility","Resolution"],
+    4:["Voice","Story","Gesture","Teaching","Symbol"],
+    5:["Rhythm","Movement","Style","Humor","Innovation"],
+    6:["Foodways","Ritual","Gathering","Milestones","Community"]
+  };
+
+  var TIERS = {
+    roots:{icon:"🌱",name:"Roots",sub:"Origin, Identity, Memory",pieces:[1,2],state:"The roots were damaged.",
+      quote:"Healing does not begin where culture is visible. It begins where meaning is formed."},
+    trunk:{icon:"🌳",name:"Trunk",sub:"Structure, Transmission, Stability",pieces:[3,4],state:"The trunk was distorted.",
+      quote:"Nothing in the roots can be restored without passing through the trunk."},
+    crown:{icon:"🌿",name:"Crown",sub:"Expression, Creativity, Visibility",pieces:[5,6],state:"The crown grew wild in response.",
+      quote:"Nothing in the crown can permanently heal what is broken in the roots."}
+  };
+
+  // the five Cultural Healing Pathway sets, as written in the framework (used to annotate matching traces)
+  var PATHS = [
+    {id:1,name:"Identity Repair → Stable Expression",root:1,trunk:[3],crown:5,
+     rootLab:"Key fracture",rootText:"Disrupted self-worth, criminalized spirituality, distorted family meaning",
+     repair:["Rebuilding family roles","Reframing gender expectations under stability (not crisis)","Restoring community responsibility without survival pressure"],
+     crownLab:"Resulting outcomes",outcomes:["Expression shifts from coping → storytelling → authorship","Art reflects wholeness, not just resistance","Creativity becomes sustainable, not extractive"],
+     meaning:"When Black Americans no longer have to prove worth, expression stops carrying all the weight."},
+    {id:2,name:"Memory Repair → Cultural Continuity",root:2,trunk:[4],crown:6,
+     rootLab:"Key fracture",rootText:"Interrupted lineage, erased family narratives, trauma without context",
+     repair:["Rebuilding storytelling traditions","Teaching family history as literacy","Restoring intergenerational dialogue (elders → youth)"],
+     crownLab:"Resulting outcomes",outcomes:["Rituals regain meaning, not just repetition","Celebrations reconnect to ancestry","Life milestones regain grounding and continuity"],
+     meaning:"When people know where they come from, traditions stop feeling empty or performative."},
+    {id:3,name:"Self-Worth → Structural Stability",root:1,rootComp:1,trunk:[3],crown:6,
+     rootLab:"Specific component activated",rootText:"View of self and human worth",
+     repair:["Respect and authority structures rebuilt without fear","Conflict resolution moves from reaction → process","Community responsibility becomes shared, not gender-skewed"],
+     crownLab:"Resulting outcomes",outcomes:["Healthier relationship norms","More stable family rituals","Less pressure on celebrations to compensate for instability"],
+     meaning:"You cannot ritual your way out of structural damage — but structure can restore ritual."},
+    {id:4,name:"Communication → Intergenerational Transfer",root:2,rootComp:3,trunk:[4],crown:5,
+     rootLab:"Key component",rootText:"Ancestral knowledge",
+     repair:["Teaching metaphors, symbols, and coded language consciously","Moving from survival-coded speech → intentional language","Formalizing oral tradition without losing soul"],
+     crownLab:"Resulting outcomes",outcomes:["Art carries history without distortion","Music educates as well as entertains","Visibility becomes controlled, not exploited"],
+     meaning:"When language is reclaimed, expression stops being misunderstood."},
+    {id:5,name:"Trauma → Agency",core:true,root:2,trunk:[3,4],crown:5,
+     rootLab:"Named trauma",rootText:"Slavery → Reconstruction → Jim Crow → War on Drugs",
+     repair:["Social adaptation under pressure","Language evolving for safety"],repairLab:"Trunk 3 + 4",
+     crownLab:"Current state",outcomes:["Flourishing but overloaded crown","Expression carrying unresolved roots and trunk stress"],
+     correction:"Redirect repair back downward — not asking the crown to fix the tree.",
+     meaning:"The crown shows survival. The roots decide sustainability."}
+  ];
+
+  var SLOTS = [
+    ["Black Americans (Native &amp; Multi-Century Lineage)","The standalone slot for native Black Americans present prior to colonization, alongside the descendants of the early enslaved populations. This group’s distinct culture was forged over centuries on this soil, largely after family history and language were systematically erased well before the 1808 slave trade ban."],
+    ["Gullah Geechee Americans (The Direct Ancestral Exception)","A highly distinct sub-group within the native U.S. lineage. Because they were isolated on the barrier islands of the American South, they successfully preserved direct linguistic, cultural, and genetic links to specific West African tribes — specifically the Mende and Temne of Sierra Leone — making them the only native-born group with a traceable, intact African cultural receipt."],
+    ["Continental African Americans","The broad umbrella for all post-1965 voluntary immigrants (and their children) who came straight from sovereign nations on the African continent to live in the United States (e.g., Nigerian Americans, Ethiopian Americans, Ghanaian Americans)."],
+    ["Afro-Caribbean Americans","The broad umbrella for all immigrants (and their children) who came from any of the Caribbean islands to live in the United States (e.g., Jamaican Americans, Haitian Americans, Trinidadian Americans)."],
+    ["Afro-Latino Americans","The broad umbrella for all immigrants (and their children) who came from Spanish or Portuguese-speaking Central or South American nations to live in the United States (e.g., Afro-Brazilian Americans, Afro-Colombian Americans, Afro-Cuban Americans)."],
+    ["Afro-Canadian Americans","The distinct umbrella for Black populations from Canada who now reside in the United States, holding a unique historical connection to Black Americans who originally traveled north via the Underground Railroad."],
+    ["Afro-European Americans","The broad umbrella for diaspora populations migrating to the United States from European nations, such as Afro-British Americans or Afro-French Americans."],
+    ["Afro-Oceanic &amp; Afro-Asian Americans","The broad global umbrella covering Black diaspora immigrants from Australia, Hawaii, and Asia, alongside historical Afro-Arab populations, who now hold residency or citizenship in the United States."]
+  ];
+
+  var TONE = {roots:"#7a5233",trunk:"#4a3324",crown:"#2e5238"};
+  var ORDER = ["roots","trunk","crown"];
+
+  var svg = document.getElementById("tree");
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, text){
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text) e.textContent = text;
+    return e;
+  }
+  function plain(s){ return s.replace(/&amp;/g, "&"); }
+
+  /* ---------- draw the organic parts (deterministic, same every load) ---------- */
+  function rng(seed){ return function(){ seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+  function smooth(pts){                       // closed Catmull-Rom → Bezier
+    var n = pts.length, d = "M" + pts[0][0].toFixed(1) + "," + pts[0][1].toFixed(1);
+    for (var i = 0; i < n; i++){
+      var p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+      d += " C" + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + "," + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) + " " +
+           (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + "," + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) + " " +
+           p2[0].toFixed(1) + "," + p2[1].toFixed(1);
+    }
+    return d + "Z";
+  }
+  function openCurve(s){                      // open Catmull-Rom through points → Bezier path
+    var n = s.length, d = "M" + s[0][0] + "," + s[0][1];
+    for (var i = 0; i < n - 1; i++){
+      var p0 = s[Math.max(i - 1, 0)], p1 = s[i], p2 = s[i + 1], p3 = s[Math.min(i + 2, n - 1)];
+      d += " C" + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + "," + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) + " " +
+           (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + "," + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) + " " + p2[0] + "," + p2[1];
+    }
+    return d;
+  }
+  function blob(cx, cy, rx, ry, n, amp, seed){
+    var r = rng(seed), pts = [];
+    for (var i = 0; i < n; i++){
+      var a = i / n * Math.PI * 2, k = 1 + (i % 2 ? amp * (0.5 + r()) : -amp * 0.3 * r()) + amp * 0.8 * Math.sin(a * 3 + seed);
+      pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]);
+    }
+    return smooth(pts);
+  }
+  var CANOPY = blob(300, 184, 248, 156, 34, 0.055, 11);
+  document.getElementById("canopyBack").setAttribute("d", blob(300, 196, 250, 156, 34, 0.05, 11));
+  document.getElementById("canopyL").setAttribute("d", CANOPY);
+  document.getElementById("canopyR").setAttribute("d", CANOPY);
+  document.getElementById("canopyClipPath").setAttribute("d", CANOPY);
+  function clumps(id, side, seed, light, dark){
+    var g = document.getElementById(id), r = rng(seed);
+    for (var i = 0; i < 9; i++){
+      var x = 300 + side * (40 + r() * 190), y = 70 + r() * 210, s = 34 + r() * 30;
+      g.appendChild(el("path", {d: blob(x, y, s, s * 0.8, 16, 0.07, seed + i * 31), fill: i % 3 ? dark : light, opacity: 0.45}));
+    }
+  }
+  clumps("clumpsL", -1, 101, "#5b8862", "#284631");
+  clumps("clumpsR", 1, 203, "#7a8d55", "#3a4a29");
+
+  /* ---------- realistic roots: tapered, branching, with rootlets ---------- */
+  // left-side roots; the right side is a mirror image. Points run from the trunk outward.
+  var ROOTS = {
+    R1:{w:[18,2],   pts:[[250,458],[196,476],[132,490],[70,506],[20,526]]},
+    R2:{w:[22,2],   pts:[[266,460],[234,508],[186,560],[136,612],[96,664],[70,702]]},
+    R3:{w:[20,2.5], pts:[[288,462],[282,530],[268,606],[254,680],[248,748]]},
+    B1:{w:[9,1.5],  pts:[[132,490],[112,540],[82,586],[48,618]]},
+    B2:{w:[9,1.5],  pts:[[186,560],[214,612],[220,672],[206,732]]},
+    B3:{w:[6,1],    pts:[[136,612],[86,636],[36,662]]},
+    B4:{w:[5,1],    pts:[[234,508],[262,560],[268,590]]}
+  };
+  function mirror(p){ return [600 - p[0], p[1]]; }
+  function sampleCR(pts, per){
+    var out = [], n = pts.length;
+    for (var i = 0; i < n - 1; i++){
+      var p0 = pts[Math.max(i - 1, 0)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(i + 2, n - 1)];
+      for (var s = 0; s < per; s++){
+        var t = s / per, t2 = t * t, t3 = t2 * t;
+        out.push([0, 1].map(function(k){
+          return 0.5 * ((2 * p1[k]) + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3);
+        }));
+      }
+    }
+    out.push(pts[n - 1].slice());
+    return out;
+  }
+  function taper(pts, w0, w1){
+    var s = sampleCR(pts, 12), n = s.length, L = [], R = [];
+    for (var k = 0; k < n; k++){
+      var a = s[Math.max(k - 1, 0)], b = s[Math.min(k + 1, n - 1)];
+      var dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+      var nx = -dy / len, ny = dx / len, f = k / (n - 1);
+      var w = (w1 + (w0 - w1) * Math.pow(1 - f, 1.3)) / 2;
+      L.push((s[k][0] + nx * w).toFixed(1) + "," + (s[k][1] + ny * w).toFixed(1));
+      R.push((s[k][0] - nx * w).toFixed(1) + "," + (s[k][1] - ny * w).toFixed(1));
+    }
+    return {d: "M" + L.join(" L") + " L" + R.reverse().join(" L") + "Z", spine: s};
+  }
+  function drawRoots(id, flip){
+    var g = document.getElementById(id), r = rng(flip ? 977 : 433);
+    var shadow = el("g", {fill: "#0e0906", "fill-opacity": .5, transform: "translate(2,3)"}), body = el("g", {fill: "url(#rootFill)"}),
+        light = el("g", {fill: "none", stroke: "#a98463", "stroke-opacity": .35, "stroke-linecap": "round"}),
+        lets = el("g", {fill: "none", stroke: "#7d5d42", "stroke-linecap": "round"});
+    Object.keys(ROOTS).forEach(function(key){
+      var R = ROOTS[key], pts = flip ? R.pts.map(mirror) : R.pts, t = taper(pts, R.w[0], R.w[1]);
+      shadow.appendChild(el("path", {d: t.d})); body.appendChild(el("path", {d: t.d}));
+      var sp = t.spine, hi = sp.slice(0, Math.floor(sp.length * .7)).map(function(p){ return [p[0] - 1, p[1] - 1]; });
+      light.appendChild(el("path", {d: "M" + hi.map(function(p){ return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" L"), "stroke-width": Math.max(1, R.w[0] / 7)}));
+      // rootlets: small side shoots along the root, finer near the tip
+      for (var j = 0; j < 5; j++){
+        var f = .25 + j * .15 + r() * .06, idx = Math.min(sp.length - 2, Math.floor(f * (sp.length - 1)));
+        var p = sp[idx], q = sp[idx + 1], ang = Math.atan2(q[1] - p[1], q[0] - p[0]) + (j % 2 ? 1 : -1) * (.6 + r() * .5);
+        var L = (10 + r() * 18) * (R.w[0] > 10 ? 1.2 : .7);
+        var e = [p[0] + Math.cos(ang) * L, p[1] + Math.sin(ang) * L], m = [p[0] + Math.cos(ang - .3) * L * .5, p[1] + Math.sin(ang - .3) * L * .5];
+        lets.appendChild(el("path", {d: "M" + p[0].toFixed(1) + "," + p[1].toFixed(1) + " Q" + m[0].toFixed(1) + "," + m[1].toFixed(1) + " " + e[0].toFixed(1) + "," + e[1].toFixed(1),
+          "stroke-width": (R.w[0] > 10 ? 1.6 : 1).toFixed(1), "stroke-opacity": .8}));
+      }
+    });
+    g.appendChild(shadow); g.appendChild(body); g.appendChild(light); g.appendChild(lets);
+  }
+  drawRoots("rootsL", false);
+  drawRoots("rootsR", true);
+  (function(){ var g = document.getElementById("pebbles"), r = rng(57);
+    for (var i = 0; i < 26; i++) g.appendChild(el("ellipse", {cx: (r() * 600).toFixed(0), cy: (480 + r() * 270).toFixed(0), rx: (1.5 + r() * 3).toFixed(1), ry: (1 + r() * 2).toFixed(1)}));
+  })();
+
+  /* ---------- the 30 pick points (5 per category) ---------- */
+  // roots sit on the drawn roots; "chain" lists the root points back to the trunk, so a trace follows the root itself
+  var ROOT_SPOTS = [ {r:"R3", i:1, side:"l"}, {r:"R2", i:2, side:"l"}, {r:"B1", i:2, via:["R1",2], side:"b"}, {r:"R1", i:3, side:"b"}, {r:"R3", i:3, side:"l"} ];
+  var TRUNK_L = [[286,312],[285,343],[283,374],[280,405],[273,436]];
+  var CROWN_L = [[112,112],[226,70],[90,212],[164,276],[262,240]], CROWN_SIDE = ["r","l","r","r","l"];
+  function flipSide(s){ return s === "l" ? "r" : s === "r" ? "l" : s; }
+  var SPOT = {};
+  function chainFor(spot, flip){
+    var P = function(key, i){ var p = ROOTS[key].pts[i]; return flip ? mirror(p) : p.slice(); };
+    var c = [];
+    for (var i = spot.i; i >= (spot.via ? 1 : 0); i--) c.push(P(spot.r, i));
+    if (spot.via) for (var j = spot.via[1]; j >= 0; j--) c.push(P(spot.via[0], j));
+    return c;
+  }
+  ROOT_SPOTS.forEach(function(s, k){
+    var c1 = chainFor(s, false), c2 = chainFor(s, true);
+    SPOT["1-" + (k + 1)] = {pt: c1[0], side: s.side, chain: c1};
+    SPOT["2-" + (k + 1)] = {pt: c2[0], side: flipSide(s.side), chain: c2};
+  });
+  TRUNK_L.forEach(function(p, k){ SPOT["3-" + (k + 1)] = {pt: p, side: "l"}; SPOT["4-" + (k + 1)] = {pt: mirror(p), side: "r"}; });
+  CROWN_L.forEach(function(p, k){ SPOT["5-" + (k + 1)] = {pt: p, side: CROWN_SIDE[k]}; SPOT["6-" + (k + 1)] = {pt: mirror(p), side: flipSide(CROWN_SIDE[k])}; });
+
+  function tierOf(n){ return PIECES[n].tier; }
+  var picksG = document.getElementById("picks"), labelsG = document.getElementById("labels");
+  Object.keys(SPOT).forEach(function(key){
+    var n = +key.split("-")[0], i = +key.split("-")[1], s = SPOT[key], tier = tierOf(n);
+    var g = el("g", {"class": "pick", "data-pick": key, tabindex: 0, role: "button",
+      "aria-label": TIERS[tier].name + ", " + plain(PIECES[n].title) + ": " + PIECES[n].comps[i - 1]});
+    g.appendChild(el("title", {}, PIECES[n].comps[i - 1]));
+    g.appendChild(el("circle", {"class": "hit", cx: s.pt[0], cy: s.pt[1], r: 14}));
+    g.appendChild(el("circle", {"class": "ring", cx: s.pt[0], cy: s.pt[1], r: 9}));
+    g.appendChild(el("circle", {"class": "core", cx: s.pt[0], cy: s.pt[1], r: 6}));
+    picksG.appendChild(g);
+    var lab = el("g", {"class": "plab", "data-lab": key});
+    lab.appendChild(el("rect", {rx: 12, height: 24, stroke: TONE[tier]}));
+    lab.appendChild(el("text", {}, plain(WORD[n][i - 1])));
+    labelsG.appendChild(lab);
+  });
+  function layoutLabels(){
+    labelsG.querySelectorAll(".plab").forEach(function(lab){
+      var s = SPOT[lab.getAttribute("data-lab")], t = lab.querySelector("text"), r = lab.querySelector("rect");
+      var w = Math.ceil(t.getComputedTextLength()) + 18, h = 24, x, y, px = s.pt[0], py = s.pt[1];
+      if (s.side === "r"){ x = px + 12; y = py - h / 2; }
+      else if (s.side === "l"){ x = px - 12 - w; y = py - h / 2; }
+      else if (s.side === "b"){ x = px - w / 2; y = py + 11; }
+      else { x = px - w / 2; y = py - 11 - h; }
+      x = Math.max(4, Math.min(596 - w, x));
+      r.setAttribute("x", x); r.setAttribute("y", y); r.setAttribute("width", w);
+      t.setAttribute("x", x + 9); t.setAttribute("y", y + 16.5);
+    });
+  }
+  layoutLabels();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutLabels);
+
+  /* ---------- category labels (open the pop-ups) ---------- */
+  function addPill(n, cx, cy, w, l1, l2){
+    var g = el("g", {"class": "cat-pill", "data-piece": n, tabindex: 0, role: "button", "aria-label": "About " + plain(PIECES[n].title)});
+    var tone = TONE[PIECES[n].tier], h = 40, x = cx - w / 2, y = cy - h / 2;
+    g.appendChild(el("rect", {x: x, y: y, width: w, height: h, rx: 10, fill: "#fbf8f2", "fill-opacity": .96, stroke: tone, "stroke-width": 1.5}));
+    g.appendChild(el("circle", {cx: x + 18, cy: cy, r: 11, fill: tone}));
+    g.appendChild(el("text", {x: x + 18, y: cy + 4.2, "text-anchor": "middle", "class": "pnum"}, String(n)));
+    g.appendChild(el("text", {x: x + 35, y: cy - 3, "class": "ptxt"}, l1));
+    g.appendChild(el("text", {x: x + 35, y: cy + 13, "class": "ptxt"}, l2));
+    document.getElementById("cats").appendChild(g);
+  }
+  addPill(1, 84, 734, 136, "Beliefs", "& Values");
+  addPill(2, 506, 734, 160, "History &", "Collective Memory");
+  addPill(3, 80, 372, 136, "Social Rules", "& Norms");
+  addPill(4, 516, 372, 146, "Language &", "Communication");
+  addPill(5, 186, 176, 140, "Art, Music", "& Expression");
+  addPill(6, 414, 176, 136, "Customs &", "Traditions");
+
+  /* ---------- animation settings (remembered in this browser) ---------- */
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var SET = { motion: !reduced, flow: !reduced, speed: 1 };
+  try { var saved = JSON.parse(localStorage.getItem("cultureTreeAnim") || "null"); if (saved) for (var k in SET) if (k in saved) SET[k] = saved[k]; } catch (e) {}
+  function saveSet(){ try { localStorage.setItem("cultureTreeAnim", JSON.stringify(SET)); } catch (e) {} }
+
+  var ctlBtn = document.getElementById("ctlBtn"), panel = document.getElementById("ctlPanel");
+  var swMotion = document.getElementById("swMotion"), swFlow = document.getElementById("swFlow"), speedSeg = document.getElementById("speedSeg");
+  function applySet(){
+    svg.classList.toggle("motion", SET.motion);
+    swMotion.setAttribute("aria-checked", String(SET.motion));
+    swFlow.setAttribute("aria-checked", String(SET.flow));
+    speedSeg.querySelectorAll("button").forEach(function(b){ b.setAttribute("aria-pressed", String(+b.getAttribute("data-speed") === SET.speed)); });
+    var on = SET.motion || SET.flow;
+    ctlBtn.classList.toggle("off", !on);
+    document.getElementById("ctlLabel").textContent = "Animation: " + (on ? "On" : "Off");
+  }
+  ctlBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    var open = !panel.classList.contains("open");
+    panel.classList.toggle("open", open); ctlBtn.setAttribute("aria-expanded", String(open));
+  });
+  panel.addEventListener("click", function(e){ e.stopPropagation(); });
+  document.addEventListener("click", function(){ panel.classList.remove("open"); ctlBtn.setAttribute("aria-expanded", "false"); });
+  swMotion.addEventListener("click", function(){ SET.motion = !SET.motion; applySet(); saveSet(); });
+  swFlow.addEventListener("click", function(){ SET.flow = !SET.flow; applySet(); saveSet(); if (complete()) drawTrace(true); });
+  speedSeg.addEventListener("click", function(e){ var b = e.target.closest("button"); if (!b) return; SET.speed = +b.getAttribute("data-speed"); applySet(); saveSet(); });
+  applySet();
+
+  /* ---------- picking: one point in the roots, the trunk, then the crown ---------- */
+  var sel = {roots: null, trunk: null, crown: null};
+  function complete(){ return !!(sel.roots && sel.trunk && sel.crown); }
+  function stepNow(){ for (var k = 0; k < 3; k++) if (!sel[ORDER[k]]) return k; return 3; }
+
+  function render(){
+    var now = stepNow();
+    picksG.querySelectorAll(".pick").forEach(function(g){
+      var key = g.getAttribute("data-pick"), n = +key.split("-")[0], tier = tierOf(n), ti = ORDER.indexOf(tier);
+      var picked = sel[tier] === key, active = now < 3 && ti === now, future = now < 3 && ti > now;
+      g.classList.toggle("picked", picked); g.classList.toggle("active", active); g.classList.toggle("future", future);
+      g.setAttribute("tabindex", future ? -1 : 0);
+      var lab = labelsG.querySelector('[data-lab="' + key + '"]');
+      lab.classList.toggle("show", picked || active); lab.classList.toggle("chosen", picked);
+    });
+    document.querySelectorAll(".slot").forEach(function(s, k){
+      var key = sel[ORDER[k]], v = s.querySelector(".s-v");
+      s.classList.toggle("now", k === now); s.classList.toggle("done", !!key); s.classList.toggle("empty", !key);
+      v.textContent = key ? plain(WORD[+key.split("-")[0]][+key.split("-")[1] - 1]) : (k === now ? "Pick a point" : "—");
+      s.setAttribute("aria-label", ORDER[k] + ": " + (key ? v.textContent + " (select to change)" : "not picked yet"));
+    });
+  }
+
+  function pick(key){
+    var tier = tierOf(+key.split("-")[0]);
+    if (ORDER.indexOf(tier) > stepNow()) return;           // pick the roots first, then the trunk, then the crown
+    sel[tier] = key; render();
+    if (complete()) drawTrace(); else clearTrace();
+  }
+  function unpick(tier){ sel[tier] = null; clearTrace(); render(); }
+  function resetAll(){ sel = {roots: null, trunk: null, crown: null}; clearTrace(); render(); }
+  function randomTrace(){
+    function one(pieces){ return pieces[Math.floor(Math.random() * 2)] + "-" + (1 + Math.floor(Math.random() * 5)); }
+    sel = {roots: one([1,2]), trunk: one([3,4]), crown: one([5,6])}; render(); drawTrace();
+  }
+
+  /* ---------- the trace: drawn root → trunk → crown, then a pulse travels along it ---------- */
+  var flow = document.getElementById("flow"), bar = document.getElementById("activeBar"), pauseBtn = document.getElementById("pauseBtn");
+  var raf = 0, paused = false, pathEl = null, pulse = null, len = 0, t0 = 0, tPaused = 0;
+  function route(){
+    var R = SPOT[sel.roots], T = SPOT[sel.trunk], C = SPOT[sel.crown];
+    var top = [T.pt[0] < 300 ? 293 : 307, 296];
+    return openCurve(R.chain.concat([T.pt, top, C.pt]));
+  }
+  function stop(){ cancelAnimationFrame(raf); raf = 0; }
+  function frame(now){
+    var dur = 1800 / SET.speed, period = 2600 / SET.speed, e = now - t0;
+    if (e < dur){                                         // drawing phase
+      var f = 1 - Math.pow(1 - e / dur, 3);
+      pathEl.style.strokeDashoffset = String(len * (1 - f));
+      var pt = pathEl.getPointAtLength(len * f); pulse.setAttribute("cx", pt.x); pulse.setAttribute("cy", pt.y);
+    } else {                                              // pulse keeps travelling upward
+      pathEl.style.strokeDashoffset = "0";
+      var g = ((e - dur) % period) / period, pt2 = pathEl.getPointAtLength(len * g);
+      pulse.setAttribute("cx", pt2.x); pulse.setAttribute("cy", pt2.y);
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  function parts(){
+    return ORDER.map(function(t){ var k = sel[t].split("-"); return {n: +k[0], i: +k[1], key: sel[t]}; });
+  }
+  function traceName(){
+    var p = parts();
+    return {title: "From " + plain(WORD[p[0].n][p[0].i - 1]) + " to " + plain(WORD[p[2].n][p[2].i - 1]),
+            via: "through " + plain(WORD[p[1].n][p[1].i - 1]),
+            code: p.map(function(x){ return x.n + "." + x.i; }).join(" · ")};
+  }
+  function lc(s){ return s.charAt(0).toLowerCase() + s.slice(1); }
+  function goalLine(){
+    var p = parts();
+    return "Restore " + lc(PIECES[p[0].n].comps[p[0].i - 1]) + ", carry it through " + lc(PIECES[p[1].n].comps[p[1].i - 1]) +
+           ", and let it grow into " + lc(PIECES[p[2].n].comps[p[2].i - 1]) + ".";
+  }
+  function matches(){
+    var p = parts();
+    return PATHS.filter(function(x){ return x.root === p[0].n && x.crown === p[2].n && x.trunk.indexOf(p[1].n) > -1; });
+  }
+
+  function drawTrace(keepState){
+    stop();
+    var p = parts(), lit = [p[0].n, p[1].n, p[2].n];
+    svg.classList.add("dim");
+    svg.querySelectorAll(".zone").forEach(function(z){ z.classList.toggle("lit", lit.indexOf(+z.getAttribute("data-zone")) > -1); });
+    var d = route();
+    flow.innerHTML = "";
+    flow.appendChild(el("path", {d: d, "class": "flow-halo"}));
+    pathEl = el("path", {d: d, "class": "flow-path"}); flow.appendChild(pathEl);
+    len = pathEl.getTotalLength();
+    pathEl.style.strokeDasharray = len + " " + len;
+    var nm = traceName();
+    document.getElementById("activeText").textContent = nm.title;
+    bar.classList.add("show");
+    if (!keepState) paused = false;
+    if (SET.flow){
+      pulse = el("circle", {r: 7, "class": "pulse"}); flow.appendChild(pulse);
+      pathEl.style.strokeDashoffset = String(len);
+      t0 = performance.now(); pauseBtn.disabled = false; pauseBtn.style.opacity = 1;
+      if (paused) { tPaused = t0; pathEl.style.strokeDashoffset = "0"; pulse.setAttribute("cx", -20); } else raf = requestAnimationFrame(frame);
+    } else {
+      pathEl.style.strokeDashoffset = "0"; pauseBtn.disabled = true; pauseBtn.style.opacity = .4;
+    }
+    pauseBtn.textContent = paused ? "▶" : "❚❚";
+    pauseBtn.setAttribute("aria-label", paused ? "Play the flow" : "Pause the flow");
+    showResult();
+  }
+  function clearTrace(){
+    stop();
+    svg.classList.remove("dim");
+    svg.querySelectorAll(".zone").forEach(function(z){ z.classList.remove("lit"); });
+    flow.innerHTML = ""; bar.classList.remove("show");
+    document.getElementById("result").hidden = true;
+  }
+  pauseBtn.addEventListener("click", function(){
+    if (!complete() || !SET.flow) return;
+    paused = !paused;
+    if (paused){ tPaused = performance.now(); stop(); }
+    else { t0 += performance.now() - tPaused; raf = requestAnimationFrame(frame); }
+    pauseBtn.textContent = paused ? "▶" : "❚❚";
+    pauseBtn.setAttribute("aria-label", paused ? "Play the flow" : "Pause the flow");
+  });
+  document.getElementById("replayBtn").addEventListener("click", function(){ if (complete()){ paused = false; drawTrace(); } });
+  document.getElementById("clearPath").addEventListener("click", resetAll);
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+  document.getElementById("randomBtn").addEventListener("click", randomTrace);
+
+  function showResult(){
+    var nm = traceName(), m = matches(), box = document.getElementById("result");
+    box.innerHTML = '<div class="k">Your trace · ' + nm.code + '</div>' +
+      '<h3>' + nm.title + '</h3><p class="via">' + nm.via + '</p>' +
+      '<p class="goal"><b>Goal:</b> ' + goalLine() + '</p>' +
+      (m.length ? '<p class="goal" style="margin-top:6px;color:var(--muted)">Follows ' + m.map(function(x){ return 'Pathway Set ' + x.id; }).join(' and ') + ' in the framework.</p>' : '') +
+      '<div class="actions"><button type="button" class="btn solid" data-trace>Read the full trace</button><button type="button" class="btn" data-reset>Trace another</button></div>';
+    box.hidden = false;
+  }
+
+  /* ---------- pop-up content ---------- */
+  function tierTag(t){ var T = TIERS[t]; return '<span class="tag '+t+'">'+T.name+' — '+T.sub+'</span>'; }
+  function pieceLink(n){ return '<button class="step-h" data-piece="'+n+'">'+PIECES[n].tier.toUpperCase()+' '+n+' · '+PIECES[n].title+'</button>'; }
+  function list(items){ return '<ul>'+items.map(function(i){return '<li>'+i+'</li>';}).join('')+'</ul>'; }
+
+  function traceHTML(){
+    var nm = traceName(), p = parts(), m = matches();
+    function stepBox(x, cls){
+      var P = PIECES[x.n];
+      return '<div class="step '+cls+'">'+pieceLink(x.n)+'<div class="pt">'+P.comps[x.i-1]+'</div>' +
+        '<div class="lab">Function</div><p>'+P.fn+'</p><div class="lab">In Black American context</div><p>'+P.ctx+'</p></div>';
+    }
+    var fw = '';
+    if (m.length){
+      fw = '<h3>In the framework</h3>' + m.map(function(x){
+        var exact = x.rootComp && x.rootComp === p[0].i;
+        return '<div class="box fn"><b>Pathway Set '+x.id+(x.core?' · The Core Path':'')+(exact?' · exact root match':'')+'</b><p>'+x.name+'</p>' +
+          '<div class="lab">'+(x.repairLab||'Repair focus')+'</div>'+list(x.repair)+'<div class="lab">'+x.crownLab+'</div>'+list(x.outcomes) +
+          (x.correction?'<div class="lab">Healing correction</div><p>'+x.correction+'</p>':'')+'</div>';
+      }).join('');
+    }
+    var mean = m.length ? '<div class="meaning"><small>Meaning</small>'+m[0].meaning+'</div>'
+      : '<div class="meaning"><small>The Master Principle</small>Nothing in the crown can permanently heal what is broken in the roots. But nothing in the roots can be restored without passing through the trunk.</div>';
+    return '<span class="tag gold">Your trace · '+nm.code+'</span>' +
+      '<h2 id="mTitle">'+nm.title+'</h2><p class="q">'+nm.via+'</p>' +
+      '<div class="goalbox"><b>Goal</b>'+goalLine()+'</div><h3>The path</h3>' +
+      stepBox(p[0], 'roots') + '<div class="arrow">↓ flows into</div>' + stepBox(p[1], 'trunk') + '<div class="arrow">↓ flows into</div>' + stepBox(p[2], 'crown') +
+      fw + mean +
+      '<p class="q" style="margin:14px 0 0">Healing does not begin where culture is visible. It begins where meaning is formed.</p>' +
+      '<div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-reset>Trace another</button><button type="button" class="btn" data-random>Surprise me</button></div>';
+  }
+
+  function pieceHTML(n){
+    var p = PIECES[n];
+    var paths = PATHS.filter(function(x){ return x.root===n || x.crown===n || x.trunk.indexOf(n)>-1; });
+    return tierTag(p.tier) +
+      '<h2 id="mTitle"><span class="num" style="background:'+TONE[p.tier]+'">'+n+'</span>'+p.title+'</h2>' +
+      '<p class="q">'+p.q+'</p>' +
+      '<h3>Top 5 Components</h3><ol class="comp">'+p.comps.map(function(c){return '<li>'+c+'</li>';}).join('')+'</ol>' +
+      '<div class="box fn"><b>Function</b><p>'+p.fn+'</p></div>' +
+      '<div class="box ctx"><b>In Black American Context</b><p>'+p.ctx+'</p></div>' +
+      '<h3>Healing pathway sets through this piece</h3><div class="chips">' +
+      paths.map(function(x){ return '<button class="chip" data-path="'+x.id+'">Pathway Set '+x.id+' · '+x.name+'</button>'; }).join('') +
+      '</div>';
+  }
+
+  function pathHTML(id){
+    var p = PATHS.filter(function(x){return x.id===id;})[0];
+    var trunkHead = p.trunk.map(function(n){ return pieceLink(n); }).join('<br>');
+    return '<span class="tag gold">Cultural Healing Pathway'+(p.core?' · The Core Path':'')+'</span>' +
+      '<h2 id="mTitle">Pathway Set '+p.id+'</h2><p class="q">'+p.name+'</p>' +
+      '<div class="step roots">'+pieceLink(p.root)+'<div class="lab">'+p.rootLab+'</div><p>'+p.rootText+'</p></div>' +
+      '<div class="arrow">↓ flows into</div>' +
+      '<div class="step trunk">'+trunkHead+'<div class="lab">'+(p.repairLab||'Repair focus')+'</div>'+list(p.repair)+'</div>' +
+      '<div class="arrow">↓ flows into</div>' +
+      '<div class="step crown">'+pieceLink(p.crown)+'<div class="lab">'+p.crownLab+'</div>'+list(p.outcomes) +
+        (p.correction ? '<div class="lab">Healing correction</div><p>'+p.correction+'</p>' : '') + '</div>' +
+      '<div class="meaning"><small>Meaning</small>'+p.meaning+'</div>';
+  }
+
+  function tierHTML(t){
+    var T = TIERS[t];
+    return tierTag(t) +
+      '<h2 id="mTitle">'+T.name+'</h2><p class="q">'+T.sub+'</p>' +
+      '<div class="meaning"><small>In the thesis</small>'+T.state+'</div>' +
+      '<p class="big-quote" style="font-size:18px">“'+T.quote+'”</p>' +
+      '<h3>Pieces in the '+T.name.toLowerCase()+'</h3><div class="chips">' +
+      T.pieces.map(function(n){ return '<button class="chip" data-piece="'+n+'"><b>'+n+'.</b> '+PIECES[n].title+' — <i>'+PIECES[n].q+'</i></button>'; }).join('') +
+      '</div>';
+  }
+
+  var INFO = {
+    thesis: function(){ return '<span class="tag gold">Central Thesis</span>' +
+      '<h2 id="mTitle">Fragmented, Not Absent</h2>' +
+      '<p class="big-quote">Black American culture is not absent — it is fragmented.</p>' +
+      '<div class="step roots"><b>The roots were damaged,</b></div><div class="arrow"></div>' +
+      '<div class="step trunk"><b>the trunk was distorted,</b></div><div class="arrow"></div>' +
+      '<div class="step crown"><b>and the crown grew wild in response.</b></div>' +
+      '<div class="meaning">What the world celebrates is the visible beauty, not the structural struggle beneath it.</div>'; },
+    principle: function(){ return '<span class="tag gold">The Master Principle</span>' +
+      '<h2 id="mTitle">This Is the Rule</h2>' +
+      '<p class="big-quote">Nothing in the crown can permanently heal what is broken in the roots.</p>' +
+      '<p class="big-quote">But nothing in the roots can be restored without passing through the trunk.</p>' +
+      '<h3>That’s why</h3><ul class="plain"><li>Representation alone fails</li><li>Expression without structure exhausts</li><li>Visibility without memory fractures identity</li></ul>' +
+      '<div class="meaning"><small>The direction of healing</small>Roots → Trunk → Crown</div>'; },
+    diaspora: function(){ return '<span class="tag gold">Global Diaspora Framework</span>' +
+      '<h2 id="mTitle">8-Slot Census-Aligned Framework</h2><p class="q">Select a slot to read its definition.</p>' +
+      SLOTS.map(function(s,i){ return '<details><summary><span class="sn">'+(i+1)+'</span>'+s[0]+'</summary><p>'+s[1]+'</p></details>'; }).join(''); }
+  };
+
+  // ---- Modal mechanics (positioned near the tap so it stays visible inside a Wix embed) ----
+  var overlay = document.getElementById("overlay"), modal = document.getElementById("modal"),
+      mBody = document.getElementById("mBody"), closeBtn = document.getElementById("closeBtn"), lastFocus = null;
+
+  function pointY(e, target){
+    if (overlay.classList.contains("open")) return parseFloat(modal.style.top) + 120;
+    if (e && e.pageY && e.detail) return e.pageY;
+    var r = target.getBoundingClientRect(); return r.top + window.scrollY + r.height/2;
+  }
+  function openModal(html, y){
+    if (!overlay.classList.contains("open")) lastFocus = document.activeElement;
+    var docH = document.documentElement.scrollHeight;
+    mBody.innerHTML = html;
+    overlay.style.height = docH + "px";
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden","false");
+    modal.scrollTop = 0;
+    var h = modal.offsetHeight;
+    var top = Math.max(12, Math.min(y - 140, docH - h - 12));
+    modal.style.top = top + "px";
+    closeBtn.focus({preventScroll:true});
+  }
+  function closeModal(){
+    overlay.classList.remove("open");
+    overlay.setAttribute("aria-hidden","true");
+    if (lastFocus && lastFocus.focus && document.contains(lastFocus)) lastFocus.focus({preventScroll:true});
+  }
+  closeBtn.addEventListener("click", closeModal);
+  overlay.addEventListener("click", function(e){ if (e.target === overlay) closeModal(); });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && overlay.classList.contains("open")) closeModal();
+    var z = e.target.closest && e.target.closest(".pick, .cat-pill");
+    if (z && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); z.dispatchEvent(new MouseEvent("click",{bubbles:true})); }
+  });
+
+  document.addEventListener("click", function(e){
+    var t;
+    if (e.target.closest("#ctlPanel, #ctlBtn, #activeBar")) return;
+    if ((t = e.target.closest("[data-pick]"))){ pick(t.getAttribute("data-pick")); return; }
+    if ((t = e.target.closest("[data-slot]"))){ if (sel[t.getAttribute("data-slot")]) unpick(t.getAttribute("data-slot")); return; }
+    if ((t = e.target.closest("[data-reset]"))){ closeModal(); resetAll(); document.getElementById("steps").scrollIntoView({behavior:"smooth",block:"start"}); return; }
+    if ((t = e.target.closest("[data-random]"))){ closeModal(); randomTrace(); document.getElementById("treeBox").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+    if ((t = e.target.closest("[data-trace]"))){ if (complete()) openModal(traceHTML(), pointY(e,t)); return; }
+    if ((t = e.target.closest("[data-path]"))){
+      openModal(pathHTML(+t.getAttribute("data-path")), pointY(e,t)); return;
+    }
+    if ((t = e.target.closest("[data-piece]"))){
+      openModal(pieceHTML(+t.getAttribute("data-piece")), pointY(e,t)); return;
+    }
+    if ((t = e.target.closest("[data-tier]"))){
+      openModal(tierHTML(t.getAttribute("data-tier")), pointY(e,t)); return;
+    }
+    if ((t = e.target.closest("[data-info]"))){
+      openModal(INFO[t.getAttribute("data-info")](), pointY(e,t)); return;
+    }
+  });
+
+  render();
+})();
+</script>
+<!-- AGO shell: shared back button, members, brand frame and "More from AGO" links -->
+<script src="https://norsounorllc2026-lgtm.github.io/ago/shell/ago-shell.js" data-page="culture-tree" data-back="#backAgo"></script>
+</body>
+</html>

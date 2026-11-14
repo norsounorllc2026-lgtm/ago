@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Impact Over Time</title>
+<!--
+  Impact graph — Wix "Embed HTML" version
+  ------------------------------------------------------------------
+  Paste this whole file into a Wix Embed HTML element and give it the ID  #htmlGraph.
+  It can sit on the home page under the timeline, or on its own page (pages/Growth.js).
+
+  Every timeline entry carries seven impact scores, one per area of life, each from
+  -5 to +5 (reach 1-3 + how long it lasted 0-2):
+     Image · Wealth · Education · Power · Rights & Safety · Health · Culture
+  Two views, switched with the buttons at the top:
+    • By impact area — seven lines. Each line adds up that area's scores year by year,
+      so one event can push Wealth down and Culture up at the same time.
+    • By theme — seven lines (the seven timeline themes). Each line adds up the total
+      score of the entries in that theme.
+  The graph reads the data through the page code, so it updates as entries are added.
+-->
+<style>
+  :root {
+    --page-bg: #f3efe6;
+    --surface: #faf7f0;
+    --ink: #1f2937;
+    --ink-2: #4b5563;
+    --muted: #6b7280;
+    --grid: #e7e0cf;
+    --axis: #cfc4aa;
+    --accent: #c2410c;
+    --field-border: #d6cbb3;
+    /* line colours, fixed order (validated for colour-blind separation; labels + table give relief) */
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+    --s5: #e87ba4; --s6: #008300; --s7: #6250d6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page-bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--surface); border-radius: 10px; padding: 16px 16px 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { font-size: 13px; color: var(--muted); margin: 0 0 12px; line-height: 1.45; max-width: 800px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 10px; }
+  .seg { display: inline-flex; border: 1px solid var(--field-border); border-radius: 8px; overflow: hidden; background: #fff; }
+  .seg button { font: inherit; font-size: 13px; padding: 6px 10px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  select, .btn { font: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--field-border); border-radius: 8px; background: #fff; color: var(--ink); }
+  .btn { cursor: pointer; }
+  .btn.back { margin-bottom: 10px; }
+  .btn.back[hidden] { display: none; }
+  label.ctl { font-size: 13px; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 4px 0 8px; }
+  .legend button { font: inherit; font-size: 13px; color: var(--ink); background: none; border: 0; padding: 2px 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .legend button[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
+  .legend button[aria-pressed="false"] .key { opacity: .25; }
+  .legend .all { color: var(--accent); text-decoration: underline; }
+  .key { width: 18px; height: 3px; border-radius: 2px; display: inline-block; flex: none; }
+  .chart { position: relative; width: 100%; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .axis text { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+  .end-label { font-size: 12px; fill: var(--ink); font-weight: 600; }
+  .tip { position: absolute; pointer-events: none; background: #fff; border: 1px solid var(--grid); border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12); padding: 8px 10px; font-size: 12px; min-width: 180px; display: none; z-index: 3; }
+  .tip b { font-size: 13px; }
+  .tip .row { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+  .tip .row span:last-child { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .panel { margin-top: 14px; background: #fff; border-radius: 10px; padding: 12px 14px; box-shadow: 0 2px 8px rgba(0,0,0,.06); display: none; }
+  .panel h2 { font-size: 16px; margin: 0 0 8px; }
+  .ev { padding: 9px 4px; border-top: 1px solid #f1ede4; }
+  .ev:first-of-type { border-top: 0; }
+  .ev .top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ev .t { flex: 1; min-width: 180px; font-size: 14px; }
+  .ev .d { color: var(--muted); font-size: 12px; display: block; }
+  .ev .note { font-size: 12.5px; color: var(--ink-2); margin: 4px 0 0; line-height: 1.4; }
+  .ev .chain { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .ev .chain a { color: var(--accent); cursor: pointer; text-decoration: underline; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .chip { font-size: 11px; padding: 1px 7px; border-radius: 999px; font-variant-numeric: tabular-nums; border: 1px solid; }
+  .chip.up { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+  .chip.down { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+  .imp { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
+  .imp.gain { background: #e0f2fe; color: #075985; }
+  .imp.setback { background: #f3f4f6; color: #374151; }
+  .imp.mixed { background: #fef3c7; color: #854d0e; }
+  .pct { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+  .pct.hi { background: #dcfce7; color: #166534; }
+  .pct.mid { background: #fef3c7; color: #854d0e; }
+  .pct.lo { background: #fee2e2; color: #991b1b; }
+  .ev button { font: inherit; font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 0; background: var(--accent); color: #fff; cursor: pointer; white-space: nowrap; }
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  th, td { text-align: right; padding: 5px 8px; border-bottom: 1px solid #eee7d8; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  details.how { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; }
+  details.how summary { cursor: pointer; color: var(--accent); }
+  details.how p { margin: 6px 0; line-height: 1.45; max-width: 800px; }
+  #status { font-size: 13px; color: var(--muted); padding: 40px 0; text-align: center; }
+  @media (max-width: 600px) { .end-label { font-size: 11px; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <button type="button" class="btn back" id="backBtn" hidden>← Back to timeline</button>
+    <h1 id="title">Impact on Black Americans over time</h1>
+    <p class="sub" id="explain"></p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Lines by" id="viewSeg">
+        <button type="button" data-view="area" aria-pressed="true">By impact area</button>
+        <button type="button" data-view="theme" aria-pressed="false">By theme</button>
+      </div>
+      <div class="seg" role="group" aria-label="What to count" id="modeSeg">
+        <button type="button" data-mode="net" aria-pressed="true">Gains minus setbacks</button>
+        <button type="button" data-mode="gains" aria-pressed="false">Gains only</button>
+        <button type="button" data-mode="setbacks" aria-pressed="false">Setbacks only</button>
+      </div>
+      <label class="ctl">From
+        <select id="fromYear">
+          <option value="1300">1300</option>
+          <option value="1619">1619</option>
+          <option value="1865" selected>1865</option>
+          <option value="1954">1954</option>
+        </select>
+      </label>
+      <label class="ctl">Events counted
+        <select id="minConf">
+          <option value="0">All events</option>
+          <option value="70">70%+ verified</option>
+          <option value="85">85%+ verified</option>
+        </select>
+      </label>
+      <button type="button" class="btn" id="tableBtn" aria-pressed="false">Table view</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="chart" id="chart"><div id="status">Loading the graph…</div><div class="tip" id="tip" role="status"></div></div>
+    <div class="hint">Hover to compare lines; click a year to see its events and their scores.</div>
+    <div id="table" class="tablewrap" hidden></div>
+    <details class="how">
+      <summary>How the points work</summary>
+      <p>Each entry is scored in seven areas of Black American life: <b>Image</b> (how Black Americans were seen), <b>Wealth</b>, <b>Education</b>, <b>Power</b> (political and institutional), <b>Rights &amp; Safety</b>, <b>Health</b> and <b>Culture</b>. In each area, the single best event on the timeline is set at +5 and the single worst at −5. Every other event is placed between them in quarter-point steps (+4.75, +4.5 … +0.25) by comparing it with those two extremes. Areas an event didn't touch score 0. <b>Firsts</b> (the first Black American to hold an office, win a title or reach a milestone) count +0.25 in each area they touched. <b>Power</b> gains top out at +3, because Black Americans have won community power but not lasting national or state power; Power losses still reach −5.</p>
+      <p>One event can help some areas and hurt others, so an entry is labeled <b>Gain</b>, <b>Setback</b> or <b>Mixed</b>. Chains of cause and effect are listed as “Led to” and “Followed from”; each event keeps only its own direct points, so nothing is counted twice along a chain.</p>
+      <p>In <b>By theme</b>, an entry in two themes counts its total in both lines, so theme lines are best compared with each other rather than added together. The graph charts the documented record on this timeline, not a measured statistic like income or enrollment.</p>
+    </details>
+  </div>
+  <div class="panel" id="panel" aria-live="polite"></div>
+</main>
+
+<script>
+(function () {
+  const SITE_ORIGIN = '*';   // optional: your site address, e.g. 'https://www.mysite.com'
+  const COLORS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)', 'var(--s7)'];
+  const AREAS = [
+    { key: 'impactImage', name: 'Image' },
+    { key: 'impactWealth', name: 'Wealth' },
+    { key: 'impactEducation', name: 'Education' },
+    { key: 'impactPower', name: 'Power' },
+    { key: 'impactRights', name: 'Rights & Safety' },
+    { key: 'impactHealth', name: 'Health' },
+    { key: 'impactCulture', name: 'Culture' },
+  ];
+  const DEFAULT_THEMES = ['Resistance & Freedom Struggle', 'Democracy & Equality', 'Cultural Influence',
+    'Wealth & Business', 'Political Involvement', 'Invention & Innovation', 'Religion'];
+  const SHORT = { 'Resistance & Freedom Struggle': 'Resistance', 'Democracy & Equality': 'Democracy',
+    'Cultural Influence': 'Culture', 'Wealth & Business': 'Wealth', 'Political Involvement': 'Politics',
+    'Invention & Innovation': 'Invention', 'Religion': 'Religion', 'Rights & Safety': 'Rights' };
+  const $ = id => document.getElementById(id);
+
+  let data = null;                 // {startYear, endYear, themes, events}
+  let view = 'area', mode = 'net', minConf = 0, fromYear = 1865, showTable = false;
+  const hidden = { area: new Set(), theme: new Set() };
+  let series = [];                 // [{id, name, color, values:[...per year]}]
+  let geom = null;
+  let started = false, callId = 0;
+  const pending = new Map();
+  let bySlug = new Map();
+
+  /* ───────── messaging with the Wix page code ───────── */
+  function send(msg) { window.parent.postMessage({ source: 'timeline-graph', ...msg }, SITE_ORIGIN); }
+  function call(method, ...args) {
+    return new Promise((resolve, reject) => {
+      const id = ++callId;
+      pending.set(id, { resolve, reject });
+      send({ type: 'call', id, method, args });
+      setTimeout(() => { if (pending.has(id)) { pending.delete(id); reject(new Error('No answer from the page')); } }, 20000);
+    });
+  }
+  window.addEventListener('message', e => {
+    const m = e.data;
+    if (!m || m.source !== 'timeline-page') return;
+    if (m.type === 'reply') {
+      const p = pending.get(m.id); if (!p) return;
+      pending.delete(m.id); m.error ? p.reject(new Error(m.error)) : p.resolve(m.result);
+    } else if (m.type === 'init' && !started) {
+      started = true;
+      $('backBtn').hidden = !m.showBack;   // shown only when the graph is on its own page
+      load();
+    }
+  });
+  $('backBtn').addEventListener('click', () => send({ type: 'back' }));
+  (function hello(n) { if (started || n > 40) return; send({ type: 'ready' }); setTimeout(() => hello(n + 1), 500); })(0);
+
+  async function load() {
+    try {
+      data = await call('getGraphData');
+      data.themes = (data.themes && data.themes.length) ? data.themes : DEFAULT_THEMES;
+      bySlug = new Map(data.events.map(ev => [ev.slug, ev]));
+      fromYear = data.startYear || 1865;
+      const sel = $('fromYear');
+      if (![...sel.options].some(o => +o.value === fromYear)) sel.insertAdjacentHTML('beforeend', `<option value="${fromYear}">${fromYear}</option>`);
+      sel.value = String(fromYear);
+      buildLegend(); compute(); render();
+    } catch (err) {
+      console.error(err);
+      $('status').textContent = 'The graph could not be loaded. Please refresh the page.';
+    }
+  }
+
+  /* ───────── controls ───────── */
+  function segWire(id, attr, set) {
+    $(id).querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      set(b.dataset[attr]);
+      $(id).querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      if (attr === 'view') buildLegend();
+      compute(); render(); $('panel').style.display = 'none';
+    }));
+  }
+  segWire('viewSeg', 'view', v => { view = v; });
+  segWire('modeSeg', 'mode', v => { mode = v; });
+  $('fromYear').addEventListener('change', e => { fromYear = +e.target.value; compute(); render(); });
+  $('minConf').addEventListener('change', e => { minConf = +e.target.value; compute(); render(); });
+  $('tableBtn').addEventListener('click', () => {
+    showTable = !showTable; $('tableBtn').setAttribute('aria-pressed', String(showTable));
+    $('table').hidden = !showTable; renderTable();
+  });
+
+  function groups() {
+    return view === 'area'
+      ? AREAS.map((a, i) => ({ id: a.key, name: a.name, color: COLORS[i] }))
+      : data.themes.map((t, i) => ({ id: t, name: t, color: COLORS[i % COLORS.length] }));
+  }
+  function buildLegend() {
+    const h = hidden[view];
+    $('legend').innerHTML = groups().map(g =>
+      `<button type="button" data-id="${esc(g.id)}" aria-pressed="${!h.has(g.id)}"><span class="key" style="background:${g.color}"></span>${esc(g.name)}</button>`).join('') +
+      `<button type="button" class="all" data-all="1">Show all</button>`;
+    $('legend').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.all) { h.clear(); buildLegend(); render(); return; }
+      const id = b.dataset.id;
+      if (h.has(id)) h.delete(id); else h.add(id);
+      b.setAttribute('aria-pressed', String(!h.has(id)));
+      render();
+    }));
+  }
+
+  /* ───────── numbers ───────── */
+  function themesOf(ev) { return String(ev.theme || '').split(',').map(s => s.trim()).filter(Boolean); }
+  function counted(ev) { return (parseInt(ev.confidence, 10) || 0) >= minConf; }
+  function num(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
+  function areaScores(ev) { return AREAS.map(a => num(ev[a.key])); }
+  function pick(v) { return mode === 'net' ? v : mode === 'gains' ? Math.max(0, v) : Math.min(0, v); }
+  // what one event adds to one line
+  function contribution(ev, g) {
+    if (view === 'area') return pick(num(ev[g.id]));
+    if (!themesOf(ev).includes(g.id)) return 0;
+    return areaScores(ev).reduce((s, v) => s + pick(v), 0);
+  }
+  function compute() {
+    const years = data.endYear - fromYear + 1;
+    series = groups().map(g => {
+      const perYear = new Array(years).fill(0);
+      data.events.forEach(ev => {
+        if (!counted(ev)) return;
+        const idx = ev.year - fromYear;
+        if (idx >= 0 && idx < years) perYear[idx] += contribution(ev, g);
+      });
+      let run = 0;
+      return { ...g, values: perYear.map(v => (run += v)) };
+    });
+    const what = mode === 'net' ? 'gains minus setbacks' : mode === 'gains' ? 'gains only' : 'setbacks only';
+    $('explain').textContent = view === 'area'
+      ? `Each line starts at zero in ${fromYear} and adds up the points every timeline entry gave that area of Black American life (${what}). One event can move several lines at once — up in one area, down in another.`
+      : `Each line starts at zero in ${fromYear} and adds up the total points of the timeline entries in that theme (${what}).`;
+    if (showTable) renderTable();
+  }
+
+  /* ───────── chart (hand-drawn SVG step lines) ───────── */
+  function visibleSeries() { return series.filter(s => !hidden[view].has(s.id)); }
+  function render() {
+    const box = $('chart');
+    const W = Math.max(320, box.clientWidth), H = W < 600 ? 320 : 420;
+    const m = { top: 12, right: W < 600 ? 112 : 160, bottom: 28, left: 40 };
+    const iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+    const visible = visibleSeries();
+    const all = visible.flatMap(s => s.values);
+    let yMin = Math.min(0, ...all), yMax = Math.max(4, ...all);
+    if (mode === 'setbacks') yMax = Math.max(0, ...all);
+    if (yMax - yMin < 4) yMin = Math.min(yMin, yMax - 4);
+    const step = niceStep((yMax - yMin) / 5);
+    yMin = Math.floor(yMin / step) * step; yMax = Math.ceil(yMax / step) * step;
+    const span = Math.max(1, data.endYear - fromYear);
+    const x = yr => m.left + ((yr - fromYear) / span) * iw;
+    const y = v => m.top + ih - ((v - yMin) / (yMax - yMin)) * ih;
+    geom = { W, H, m, iw, ih, x, y };
+
+    let g = '<g class="axis">';
+    for (let v = yMin; v <= yMax + 1e-9; v += step) {
+      g += `<line x1="${m.left}" x2="${m.left + iw}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? 'var(--axis)' : 'var(--grid)'}" stroke-width="1"/>`;
+      g += `<text x="${m.left - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+    }
+    const xStep = niceYearStep(span, W);
+    for (let yr = Math.ceil(fromYear / xStep) * xStep; yr <= data.endYear; yr += xStep) {
+      if (x(yr) - x(fromYear) < 52) continue;     // keep clear of the start-year label
+      g += `<text x="${x(yr)}" y="${m.top + ih + 18}" text-anchor="middle">${yr}</text>`;
+    }
+    g += `<text x="${x(fromYear)}" y="${m.top + ih + 18}" text-anchor="start">${fromYear}</text>`;
+    g += '</g>';
+
+    const ends = [];
+    visible.forEach(s => {
+      let d = `M${x(fromYear)},${y(0)}`;
+      s.values.forEach((v, i) => { d += ` H${x(fromYear + i)} V${y(v)}`; });
+      d += ` H${x(data.endYear)}`;
+      g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+      const last = s.values[s.values.length - 1];
+      g += `<circle cx="${x(data.endYear)}" cy="${y(last)}" r="4.5" fill="${s.color}" stroke="var(--surface)" stroke-width="2"/>`;
+      ends.push({ s, y: y(last), v: last });
+    });
+
+    // direct end labels, spread apart with leader lines
+    ends.sort((a, b) => a.y - b.y);
+    const gap = 15;
+    ends.forEach((e, i) => { e.ly = i === 0 ? e.y : Math.max(e.y, ends[i - 1].ly + gap); });
+    const overflow = ends.length ? ends[ends.length - 1].ly - (m.top + ih + 6) : 0;
+    if (overflow > 0) ends.forEach(e => { e.ly -= overflow; });
+    for (let i = 1; i < ends.length; i++) if (ends[i].ly < ends[i - 1].ly + gap) ends[i].ly = ends[i - 1].ly + gap;
+    const lx = x(data.endYear) + 10;
+    ends.forEach(e => {
+      if (Math.abs(e.ly - e.y) > 1) g += `<line x1="${x(data.endYear) + 5}" y1="${e.y}" x2="${lx - 2}" y2="${e.ly}" stroke="var(--axis)" stroke-width="1"/>`;
+      g += `<rect x="${lx}" y="${e.ly - 1.5}" width="10" height="3" rx="1.5" fill="${e.s.color}"/>`;
+      g += `<text class="end-label" x="${lx + 14}" y="${e.ly + 4}">${esc(shortName(e.s.name))} ${fmt(e.v)}</text>`;
+    });
+
+    g += `<line id="xh" x1="0" x2="0" y1="${m.top}" y2="${m.top + ih}" stroke="var(--muted)" stroke-width="1" visibility="hidden"/>`;
+    g += `<g id="hd"></g>`;
+    g += `<rect id="hit" x="${m.left}" y="${m.top}" width="${iw}" height="${ih}" fill="transparent" style="cursor:crosshair"/>`;
+
+    box.querySelector('svg')?.remove();
+    $('status').style.display = 'none';
+    const label = view === 'area' ? 'impact area' : 'theme';
+    box.insertAdjacentHTML('afterbegin', `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Line chart of impact points by ${label} since ${fromYear}">${g}</svg>`);
+    const hit = box.querySelector('#hit');
+    hit.addEventListener('mousemove', onHover);
+    hit.addEventListener('mouseleave', () => { $('tip').style.display = 'none'; box.querySelector('#xh').setAttribute('visibility', 'hidden'); box.querySelector('#hd').innerHTML = ''; });
+    hit.addEventListener('click', e => showYear(yearAt(e)));
+    hit.addEventListener('touchstart', e => { const t = e.touches[0]; onHover(t); showYear(yearAt(t)); }, { passive: true });
+  }
+
+  function yearAt(e) {
+    const svg = $('chart').querySelector('svg');
+    const r = svg.getBoundingClientRect();
+    const px = (e.clientX - r.left) * (geom.W / r.width);
+    const yr = Math.round(fromYear + ((px - geom.m.left) / geom.iw) * (data.endYear - fromYear));
+    return Math.max(fromYear, Math.min(data.endYear, yr));
+  }
+
+  function eventsIn(yr) {
+    const vis = new Set(visibleSeries().map(s => s.id));
+    return data.events.filter(ev => ev.year === yr && counted(ev) &&
+      (view === 'area' ? AREAS.some(a => vis.has(a.key) && num(ev[a.key]) !== 0) : themesOf(ev).some(t => vis.has(t))));
+  }
+
+  function onHover(e) {
+    const yr = yearAt(e), box = $('chart');
+    const cx = geom.x(yr), i = yr - fromYear;
+    const xh = box.querySelector('#xh'); xh.setAttribute('x1', cx); xh.setAttribute('x2', cx); xh.setAttribute('visibility', 'visible');
+    const vis = visibleSeries();
+    box.querySelector('#hd').innerHTML = vis.map(s =>
+      `<circle cx="${cx}" cy="${geom.y(s.values[i])}" r="4.5" fill="${s.color}" stroke="var(--surface)" stroke-width="2"/>`).join('');
+    const n = eventsIn(yr).length;
+    const tip = $('tip');
+    tip.innerHTML = `<b>${yr}</b>` + [...vis].sort((a, b) => b.values[i] - a.values[i]).map(s =>
+      `<div class="row"><span class="key" style="background:${s.color}"></span><span>${esc(shortName(s.name))}</span><span>${fmt(s.values[i])}</span></div>`).join('') +
+      `<div class="row" style="color:var(--muted)">${n ? n + ' event' + (n === 1 ? '' : 's') + ' this year · click to list' : 'No events this year'}</div>`;
+    tip.style.display = 'block';
+    const r = box.getBoundingClientRect(), svgR = box.querySelector('svg').getBoundingClientRect();
+    const left = (cx / geom.W) * svgR.width + (svgR.left - r.left);
+    tip.style.left = Math.max(4, Math.min(r.width - tip.offsetWidth - 4, left + 12)) + 'px';
+    tip.style.top = '8px';
+  }
+
+  /* ───────── events for a clicked year ───────── */
+  function badge(ev) {
+    const t = ev.impact;
+    if (t === 'Setback') return '<span class="imp setback">Setback</span>';
+    if (t === 'Mixed') return '<span class="imp mixed">Mixed</span>';
+    if (t === 'Gain') return '<span class="imp gain">Gain</span>';
+    return '';
+  }
+  function chips(ev) {
+    return AREAS.map(a => ({ n: a.name, v: num(ev[a.key]) })).filter(c => c.v !== 0)
+      .map(c => `<span class="chip ${c.v > 0 ? 'up' : 'down'}">${esc(c.n)} ${c.v > 0 ? '+' : '−'}${fmt(Math.abs(c.v))}</span>`).join('');
+  }
+  function chainLinks(list) {
+    return String(list || '').split(',').map(s => s.trim()).filter(Boolean).map(slug => {
+      const t = bySlug.get(slug);
+      return t ? `<a data-slug="${esc(slug)}">${esc(t.title)} (${t.year})</a>` : '';
+    }).filter(Boolean).join(' · ');
+  }
+  function showYear(yr) {
+    const list = eventsIn(yr);
+    const panel = $('panel');
+    panel.style.display = 'block';
+    if (!list.length) { panel.innerHTML = `<h2>${yr}</h2><div style="font-size:13px;color:var(--muted)">No scored events for the lines shown in ${yr}.</div>`; return; }
+    panel.innerHTML = `<h2>${yr} · ${list.length} event${list.length === 1 ? '' : 's'}</h2>` + list.map(ev => {
+      const c = parseInt(ev.confidence, 10);
+      const cls = c >= 85 ? 'hi' : c >= 70 ? 'mid' : 'lo';
+      const total = num(ev.impactTotal);
+      const led = chainLinks(ev.ledTo), from = chainLinks(ev.followedFrom);
+      return `<div class="ev"><div class="top"><span class="t">${esc(ev.title)}<span class="d">${esc(ev.dateLabel || ev.year)}${ev.theme ? ' · ' + esc(ev.theme) : ''}</span></span>
+        ${badge(ev)} <span class="pct ${total >= 0 ? 'hi' : 'lo'}" title="Total impact points">${total > 0 ? '+' : ''}${fmt(total)} pts</span>
+        ${Number.isFinite(c) ? `<span class="pct ${cls}" title="${esc(ev.verification || '')}">${c}% verified</span>` : ''}
+        <button type="button" data-id="${esc(ev._id || ev.slug)}" data-year="${ev.year}" data-month="${ev.month || ''}" data-day="${ev.day || ''}" data-slug="${esc(ev.slug || '')}">Show on timeline</button></div>
+        ${chips(ev) ? `<div class="chips">${chips(ev)}</div>` : ''}
+        ${ev.impactNotes ? `<p class="note">${esc(ev.impactNotes)}</p>` : ''}
+        ${from ? `<div class="chain">Followed from: ${from}</div>` : ''}
+        ${led ? `<div class="chain">Led to: ${led}</div>` : ''}</div>`;
+    }).join('');
+    panel.querySelectorAll('button').forEach(b => b.addEventListener('click', () =>
+      send({ type: 'open', id: b.dataset.id, year: +b.dataset.year, month: +b.dataset.month || null, day: +b.dataset.day || null, slug: b.dataset.slug })));
+    panel.querySelectorAll('.chain a').forEach(a => a.addEventListener('click', () => {
+      const t = bySlug.get(a.dataset.slug); if (!t) return;
+      if (t.year < fromYear) { fromYear = [1300, 1619, 1865, 1954].filter(v => v <= t.year).pop() || 1300; $('fromYear').value = String(fromYear); compute(); render(); }
+      showYear(t.year); panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }));
+  }
+
+  /* ───────── table view (by decade) ───────── */
+  function renderTable() {
+    if (!data || !showTable) return;
+    const rows = [];
+    const first = Math.ceil(fromYear / 10) * 10;
+    rows.push(fromYear);
+    for (let yr = first; yr <= data.endYear; yr += 10) if (yr !== fromYear) rows.push(yr);
+    if (rows[rows.length - 1] !== data.endYear) rows.push(data.endYear);
+    $('table').innerHTML = `<table><thead><tr><th>Year</th>${series.map(s => `<th>${esc(s.name)}</th>`).join('')}</tr></thead><tbody>` +
+      rows.map(yr => `<tr><td>${yr}</td>${series.map(s => `<td>${fmt(s.values[yr - fromYear])}</td>`).join('')}</tr>`).join('') + '</tbody></table>';
+  }
+
+  /* ───────── helpers ───────── */
+  function niceStep(raw) {
+    const p = Math.pow(10, Math.floor(Math.log10(Math.max(raw, 1))));
+    const n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  }
+  function niceYearStep(span, W) {
+    const target = W < 600 ? 4 : 8;
+    return [10, 20, 25, 50, 100, 200].find(s => span / s <= target) || 250;
+  }
+  function fmt(v) { const a = Math.round(Math.abs(v) * 100) / 100; return (v < 0 ? '−' : '') + String(a); }
+  function shortName(t) { return SHORT[t] || t; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => data && render(), 150); });
+})();
+</script>
+<!-- AGO shell: shared back button, members, brand frame and "More from AGO" links -->
+<script src="https://norsounorllc2026-lgtm.github.io/ago/shell/ago-shell.js" data-page="growth" data-member="off" data-footer="off"></script>
+</body>
+</html>
