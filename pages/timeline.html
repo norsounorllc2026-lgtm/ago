@@ -139,7 +139,7 @@
       </label>
       <div class="sg-row">
         <button class="sg-btn" type="submit" id="sgSend">Check and submit</button>
-        <button class="sg-btn alt" type="button" id="sgLogin" hidden>Log in to suggest an entry</button>
+        <button class="sg-btn alt" type="button" id="sgLogin" hidden>Sign in / Sign up</button>
       </div>
     </form>
     <div id="sgResult" aria-live="polite"></div>
@@ -1128,7 +1128,7 @@
         break;
       case 'login':
         sub = { ...sub, requireLogin: true, loggedIn: false }; renderSuggest();
-        sgShow('no', esc(r.reason || 'Please log in to suggest an entry.'), true);
+        sgShow('no', esc(r.reason || 'Please sign in or sign up to suggest an entry.'), true);
         break;
       case 'closed':
         sub = { ...sub, open: false }; renderSuggest();

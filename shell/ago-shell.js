@@ -11,8 +11,8 @@
      data-page    this page's name (same names as the Wix page addresses)
      data-back    the page's existing back button (it is restyled and rewired,
                   so the page layout does not move). Leave out if none.
-     data-member  "on" (default) shows the Log in / Account button; "off" hides it;
-                  "compact" shows only its icon on narrow screens (for tight headers)
+     data-member  "on" (default) shows the Sign in / Sign up button (Account once signed in); "off" hides it;
+                  "compact" shows only initials for a signed-in member on narrow screens
      data-footer  "on" (default) adds the "More from AGO" strip; "off" leaves it out
      data-band    "on" (default) draws the red-black-green line at the top
 
@@ -20,7 +20,7 @@
      1. The same AGO back button: asks the Wix page code to open the landing page,
         and only opens it directly if the page code does not confirm within 1.2 s.
      2. The AGO brand frame (colors named --ago-*, so a page's own theme is untouched).
-     3. Members: the Log in / Account button, and window.AGO.member for page scripts.
+     3. Members: the Sign in / Sign up button, and window.AGO.member for page scripts.
      4. window.AGO.call(name, ...args): calls an allowed backend function through the
         Wix page code (this is how AI and member features reach the backend).
      5. --ago-screen-h: the visitor's real screen height (inside Wix, 100vh means the
@@ -73,7 +73,7 @@
     'width:auto!important;max-width:100%;transition:border-color .15s ease}',
     '.ago-back.ago-back:hover,.ago-member.ago-member:hover{border-color:var(--ago-gold)!important}',
     '.ago-back.ago-back::before,.ago-back.ago-back::after{content:none!important;display:none!important}',
-    '@media (max-width:520px){.ago-member.ago-compact .ago-mtxt{display:none}.ago-member.ago-compact.ago-member{padding-right:4px!important}}',
+    '@media (max-width:520px){.ago-member.ago-compact.is-in .ago-mtxt{display:none}.ago-member.ago-compact.is-in.ago-member{padding-right:4px!important}}',
     '.ago-back:focus-visible,.ago-member:focus-visible,.ago-foot button:focus-visible,.ago-foot a:focus-visible{outline:2px solid var(--ago-gold);outline-offset:2px}',
     '.ago-arrow{font-size:17px;line-height:1;margin:0 -2px 0 4px;color:var(--ago-gold)}',
     '.ago-mark{display:inline-grid;place-items:center;height:24px;padding:0 8px;border-radius:999px;background:var(--ago-gold);',
@@ -193,9 +193,9 @@
       var av = chip.querySelector('.ago-avatar');
       if (member.loggedIn) av.textContent = initials(member.name);
       else av.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="5" r="3"/><path d="M2 14.5c0-3.3 2.7-5 6-5s6 1.7 6 5z"/></svg>';
-      chip.querySelector('.ago-mtxt').textContent = member.loggedIn ? member.name : 'Log in';
-      chip.setAttribute('aria-label', member.loggedIn ? 'Your account (' + member.name + ')' : 'Log in');
-      chip.title = member.loggedIn ? 'Account settings' : 'Log in or sign up';
+      chip.querySelector('.ago-mtxt').textContent = member.loggedIn ? member.name : 'Sign in / Sign up';
+      chip.setAttribute('aria-label', member.loggedIn ? 'Your account (' + member.name + ')' : 'Sign in / Sign up');
+      chip.title = member.loggedIn ? 'Account settings' : 'Sign in / Sign up';
     }
     memberCbs.forEach(function (cb) { try { cb(member); } catch (e) { console.error(e); } });
     try { document.dispatchEvent(new CustomEvent('ago:member', { detail: member })); } catch (e) { /* old browser */ }
@@ -244,6 +244,8 @@
     login: function () { post({ type: 'login' }); },
     account: function () { post({ type: 'account' }); },
     logout: function () { post({ type: 'logout' }); },
+    /** Scrolls the Wix page so the top of this box is at the top of the screen. */
+    scrollToMe: function () { post({ type: 'scroll' }); },
     get member() { return member; },
     onMember: function (cb) { if (typeof cb === 'function') { memberCbs.push(cb); if (member) cb(member); } },
     /** AGO.call('aiAsk', 'explain', 'text') → Promise. Works only for names the page code allows. */

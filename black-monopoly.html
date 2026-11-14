@@ -18,7 +18,7 @@ html,body{margin:0;padding:0;background:#1b1410}
 #blackMonopoly button{font-family:inherit}
 
 /* top bar */
-.bm-top{display:flex;align-items:center;gap:10px;max-width:1280px;margin:0 auto 12px;flex-wrap:wrap}
+.bm-top{display:flex;align-items:center;gap:8px;max-width:1240px;margin:0 auto 8px;flex-wrap:wrap}
 .bm-back{border:0;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:var(--gold);color:var(--ink);font-weight:700;text-decoration:none;font-size:14px;white-space:nowrap;box-shadow:0 2px 0 #8a6a0e}
 .bm-back:hover{background:#f0bd2a}
 .bm-brand{flex:1;text-align:center;font-family:'Oswald',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:clamp(17px,2.6vw,28px);color:var(--gold);line-height:1.1;min-width:160px}
@@ -79,9 +79,11 @@ html,body{margin:0;padding:0;background:#1b1410}
 .bm-light{background:#efe4c9 !important;color:#15110d !important;border-color:#bba97f !important}
 
 /* game layout */
-.bm-game{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;max-width:1280px;margin:0 auto;align-items:start}
+.bm-game{display:grid;grid-template-columns:auto minmax(280px,340px);gap:12px;max-width:1240px;margin:0 auto;align-items:start;justify-content:center}
 @media(max-width:940px){.bm-game{grid-template-columns:1fr}}
-.bm-board-wrap{max-width:880px;width:100%;margin:0 auto}
+/* the board fits the visible screen (--ago-screen-h comes from the AGO shell: inside Wix, 100vh is the box) */
+.bm-board-wrap{width:min(880px,calc(var(--ago-screen-h, 100vh) - 80px),calc(100vw - 380px));min-width:300px;margin:0 auto}
+@media(max-width:940px){.bm-board-wrap{width:100%;max-width:min(760px,calc(var(--ago-screen-h, 100vh) - 60px));min-width:0}}
 .bm-board{display:grid;grid-template-columns:1.6fr repeat(9,1fr) 1.6fr;grid-template-rows:1.6fr repeat(9,1fr) 1.6fr;aspect-ratio:1/1;width:100%;background:var(--felt);border:2px solid var(--line);color:var(--ink);font-family:'Oswald',sans-serif;line-height:1.05;user-select:none;-webkit-user-select:none}
 .bm-cell{position:relative;border:.5px solid var(--line);display:flex;overflow:hidden;cursor:pointer;background:var(--felt);min-width:0;min-height:0}
 .bm-cell:hover{background:#e4f2e1}
@@ -189,17 +191,20 @@ html,body{margin:0;padding:0;background:#1b1410}
 .bm-stats i{font-style:normal;padding:0 .4em;border-radius:.3em;color:#fff}
 
 /* side panel */
-.bm-side{display:flex;flex-direction:column;gap:12px}
-.bm-panel{background:var(--panel);border:1px solid rgba(212,160,23,.35);border-radius:12px;padding:12px}
-.bm-panel h3{margin:0 0 8px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:var(--gold)}
-.bm-pl{border-left:5px solid var(--pc);background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;margin-bottom:7px}
+.bm-side{display:flex;flex-direction:column;gap:9px;min-width:0}
+.bm-panel{background:var(--panel);border:1px solid rgba(212,160,23,.35);border-radius:10px;padding:9px 10px}
+.bm-panel h3{margin:0 0 6px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:12.5px;color:var(--gold)}
+.bm-pl.me{box-shadow:inset 0 0 0 2px rgba(212,160,23,.75)}
+#bmPlayers{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.bm-pl{border-left:4px solid var(--pc);background:rgba(255,255,255,.04);border-radius:7px;padding:5px 8px;margin:0;min-width:0}
 .bm-pl.active{background:rgba(212,160,23,.16);outline:1px solid rgba(212,160,23,.6)}
 .bm-pl.out{opacity:.4}
-.bm-pl-top{display:flex;align-items:center;gap:7px;font-size:15px}
+.bm-pl-top{display:flex;align-items:center;gap:5px;font-size:13px;min-width:0}
+.bm-pl-top b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bm-pl-top em{font-style:normal;font-size:10px;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.12);letter-spacing:.05em}
-.bm-pl-tok{font-size:18px}
-.bm-cash{margin-left:auto;font-family:'Oswald',sans-serif;font-size:18px;color:#9be3a8}
-.bm-pl-sub{font-size:12px;color:#e3d3ae;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.bm-pl-tok{font-size:15px}
+.bm-cash{margin-left:auto;font-family:'Oswald',sans-serif;font-size:14px;color:#9be3a8}
+.bm-pl-sub{font-size:10.5px;color:#e3d3ae;margin-top:3px;display:flex;flex-wrap:wrap;gap:3px 4px;align-items:center}
 .bm-lane{color:#fff;background:var(--lc);border-radius:999px;padding:1px 8px;font-weight:700}
 .bm-leg{background:rgba(212,160,23,.18);color:#f3d68a;border-radius:999px;padding:1px 7px;font-weight:600}
 .bm-leg.neg{background:rgba(179,38,30,.3);color:#ffb4ab}
@@ -212,16 +217,37 @@ html,body{margin:0;padding:0;background:#1b1410}
 .bm-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
 .bm-chip{width:13px;height:16px;border-radius:2px;border:1px solid rgba(0,0,0,.5);cursor:pointer}
 .bm-chip.m{opacity:.35}
-.bm-ask{font-weight:600;margin-bottom:10px;line-height:1.45;font-size:15px}
+.bm-ask{font-weight:600;margin-bottom:8px;line-height:1.4;font-size:14px}
 .bm-ask small{display:block;font-weight:400;font-size:12.5px;color:#e3d3ae;margin-top:4px;line-height:1.45}
 .bm-btns{display:flex;flex-wrap:wrap;gap:6px}
 .bm-extra{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.14)}
 .bm-wait{color:#e3d3ae;font-style:italic}
-.bm-lanebox{border-left:4px solid var(--lc);background:rgba(255,255,255,.05);border-radius:6px;padding:6px 9px;margin-bottom:9px;font-size:12.5px;line-height:1.45;color:#e9dcbf}
+.bm-lanebox{border-left:4px solid var(--lc);background:rgba(255,255,255,.05);border-radius:6px;padding:5px 8px;margin-bottom:7px;font-size:11.5px;line-height:1.4;color:#e9dcbf}
 .bm-lanebox b{color:#fff}
-.bm-log{max-height:300px;overflow:auto;font-size:13px;line-height:1.45}
-.bm-log div{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-.bm-log i{color:#e9dcbf}
+/* "On the Board" (replaces the Griot's Log) */
+.bm-now-msg{font-size:12.5px;line-height:1.4;color:#f1e6c6;min-height:1.4em;margin-bottom:7px}
+.bm-now-msg i{color:#e9dcbf}
+.bm-now{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.bm-now-slot{all:unset;box-sizing:border-box;display:block;min-width:0;min-height:120px;border-radius:8px;background:rgba(255,255,255,.04);padding:6px;font-size:12px;color:#e3d3ae}
+button.bm-now-slot{cursor:pointer}
+button.bm-now-slot:focus-visible{outline:2px solid var(--gold)}
+.bm-now-empty{display:grid;place-items:center;min-height:106px;text-align:center;font-style:italic;color:#bba98a;padding:0 6px}
+.bm-now-k{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm-now .bm-deed{padding:5px;color:var(--ink)}
+.bm-now .bm-deed-h{padding:4px;margin-bottom:5px}
+.bm-now .bm-deed-h small{font-size:8px}
+.bm-now .bm-deed-h div{font-size:13px}
+.bm-now .bm-deed table{font-size:10.5px}
+.bm-mini-r{display:flex;justify-content:space-between;gap:6px;font:11px/1.5 'Inter',sans-serif;color:var(--ink)}
+.bm-mini-r b{text-align:right}
+.bm-mini-t{font:11px/1.4 'Inter',sans-serif;color:var(--ink);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.bm-now-more{display:block;font-size:10px;color:#bba98a;margin-top:4px;text-align:center}
+.bm-card.mini{padding:10px 8px;border-radius:10px}
+.bm-card.mini::before,.bm-card.mini::after{display:none}
+.bm-card.mini .bm-card-crest{font-size:18px;margin:0}
+.bm-card.mini .bm-card-h{font-size:11px;letter-spacing:.08em;margin-bottom:5px}
+.bm-card.mini .bm-card-h::after{width:60px;margin-top:4px}
+.bm-card.mini p{font-size:11.5px;line-height:1.4;margin:0}
 
 /* modal */
 .bm-modal{position:fixed;inset:0;background:rgba(10,7,5,.72);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
@@ -314,7 +340,6 @@ html,body{margin:0;padding:0;background:#1b1410}
   .bm-kente{padding:6px}
   .bm-side{max-height:calc(var(--ago-screen-h, 100vh) - 64px);overflow:auto;gap:8px}
   .bm-panel{padding:9px}
-  .bm-log{max-height:180px}
 }
 /* Inside the Wix box the two @media rules above see the box, not the phone (a tall box always
    looks "portrait"). The AGO shell marks the real screen on <html>, so the same layout applies. */
@@ -327,7 +352,6 @@ html.ago-phone-land .bm-board-wrap{width:min(62vw,calc(var(--ago-screen-h, 100vh
 html.ago-phone-land .bm-kente{padding:6px}
 html.ago-phone-land .bm-side{max-height:calc(var(--ago-screen-h, 100vh) - 64px);overflow:auto;gap:8px}
 html.ago-phone-land .bm-panel{padding:9px}
-html.ago-phone-land .bm-log{max-height:180px}
 html.ago-phone-land .bm-rotate{display:none!important}
 </style>
 </head>
@@ -377,9 +401,15 @@ html.ago-phone-land .bm-rotate{display:none!important}
   <section class="bm-game" id="bmGame" hidden>
     <div class="bm-board-wrap"><div class="bm-kente"><div class="bm-board" id="bmBoard"></div></div></div>
     <aside class="bm-side">
-      <div class="bm-panel"><h3>Players</h3><div id="bmPlayers"></div></div>
       <div class="bm-panel"><h3>Your Move</h3><div id="bmActions"></div></div>
-      <div class="bm-panel"><h3>Griot's Log</h3><div class="bm-log" id="bmLog"></div></div>
+      <div class="bm-panel"><h3>On the Board</h3>
+        <div class="bm-now-msg" id="bmLog" aria-live="polite"></div>
+        <div class="bm-now">
+          <button type="button" class="bm-now-slot" id="bmNowSpace" title="Open this space's full card"><span class="bm-now-empty">The space you land on shows here.</span></button>
+          <div class="bm-now-slot" id="bmNowCard"><span class="bm-now-empty">Cards you draw show here.</span></div>
+        </div>
+      </div>
+      <div class="bm-panel"><h3>Players</h3><div id="bmPlayers"></div></div>
     </aside>
   </section>
 
@@ -901,8 +931,8 @@ function renderPlayers(){
     const chips = props.map(s=>`<span class="bm-chip ${s.mort?'m':''}" data-sp="${s.i}" title="${esc(s.name)}${s.mort?' (mortgaged)':''}${s.marker?' · '+s.marker:''}" style="background:${chipColor(s)}"></span>`).join('');
     const ph = PHIL[p.lane];
     const confs = LANES.map(l=>`<span class="${p.conf[l]?'used':''}" title="${esc(PHIL[l].conf.name)} (${PHIL[l].short} lane)${p.conf[l]?' — used':''}">${PHIL[l].conf.icon}</span>`).join('');
-    return `<div class="bm-pl ${idx===S.cur&&!S.over?'active':''} ${p.bankrupt?'out':''}" style="--pc:${p.color}">
-      <div class="bm-pl-top"><span class="bm-pl-tok">${p.token}</span><b>${esc(p.name)}</b><em>${p.isHuman?'YOU':'CPU'}</em><span class="bm-cash">${p.bankrupt?'OUT':money(p.cash)}</span></div>
+    return `<div class="bm-pl ${idx===S.cur&&!S.over?'active':''} ${p.bankrupt?'out':''} ${p.isHuman?'me':''}" style="--pc:${p.color}" title="${p.isHuman?'You':'Computer player'}">
+      <div class="bm-pl-top"><span class="bm-pl-tok">${p.token}</span><b title="${esc(p.name)}">${esc(p.name)}</b><span class="bm-cash">${p.bankrupt?'OUT':money(p.cash)}</span></div>
       <div class="bm-pl-sub">
         <span class="bm-lane" style="--lc:${ph.color}" title="${esc(ph.strength)} / ${esc(ph.flaw)}">${ph.short} lane</span>
         <span class="bm-comm ${commClass(p)}" title="Community points. Help at Community Advancement to raise them. At 0 you are boycotted.">🏘️ ${p.comm}${p.comm<=0?' BOYCOTTED':p.comm>=CONFIG.championAt?' ★':''}</span>
@@ -913,10 +943,43 @@ function renderPlayers(){
   }).join('');
   $('#bmPlayers').querySelectorAll('[data-sp]').forEach(c=>c.onclick=()=>showDeed(+c.dataset.sp));
 }
+// The full log was replaced by "On the Board": only the latest event is shown.
 function log(html){
   const el = $('#bmLog'); if (!el) return;
-  const d = document.createElement('div'); d.innerHTML = html; el.prepend(d);
-  while (el.children.length > 160) el.lastChild.remove();
+  el.innerHTML = html;
+}
+// "On the Board": the space just landed on, and the last card drawn
+function showNowSpace(sp, p){
+  const el = $('#bmNowSpace'); if (!el || !sp) return;
+  const i = S.sp.indexOf(sp);
+  el.innerHTML = `<span class="bm-now-k">${p ? esc(p.token+' '+p.name)+' landed on' : 'Space'}</span>${miniDeed(sp)}<span class="bm-now-more">Tap for the full card</span>`;
+  el.onclick = () => showDeed(i);
+}
+function miniDeed(sp){
+  const o = sp.owner!==null && sp.owner!==undefined ? S.players[sp.owner] : null;
+  const row = (a,b)=>`<div class="bm-mini-r"><span>${a}</span><b>${b}</b></div>`;
+  const owner = o ? row('Owner', `<span style="color:${o.color}">${esc(o.name)}</span>${sp.mort?' (mortgaged)':''}`) : (ownable(sp) ? row('Owner','For sale') : '');
+  let head, rows = '';
+  if (sp.t==='prop'){
+    const g = GROUPS[sp.g];
+    head = `<div class="bm-deed-h" style="--gc:${g.c};--gt:${g.t}"><small>${esc(g.name.toUpperCase())}</small><div>${esc(sp.name)}</div></div>`;
+    const h = sp.houses||0;
+    rows = row('Price', money(sp.price)) + row(h ? (h===5?'Rent (hotel)':`Rent (${h} house${h>1?'s':''})`) : 'Rent', money(sp.rent[h])) + owner;
+  } else if (sp.t==='rail'){
+    head = `<div class="bm-deed-h" style="--gc:#2f6b3a;--gt:#fff"><small>GREEN BOOK STOP</small><div>📗 ${esc(sp.name)}</div></div>`;
+    rows = row('Price','$200') + row('Rent','$25–$200') + owner;
+  } else if (sp.t==='util'){
+    head = `<div class="bm-deed-h" style="--gc:#e9e2cf;--gt:#15110d"><small>UTILITY</small><div>${sp.icon||''} ${esc(sp.name)}</div></div>`;
+    rows = row('Price','$150') + row('Rent','4× or 10× dice') + owner;
+  } else {
+    head = `<div class="bm-deed-h" style="--gc:#15110d;--gt:#d4a017"><small>SPECIAL SPACE</small><div>${iconFor(sp)||''} ${esc(sp.name)}</div></div>`;
+    rows = `<div class="bm-mini-t">${esc(sp.blurb || CARD_BLURB[sp.t] || '')}</div>`;
+  }
+  return `<div class="bm-deed mini">${head}${rows}</div>`;
+}
+function showNowCard(deck, title, text){
+  const el = $('#bmNowCard'); if (!el) return;
+  el.innerHTML = `<span class="bm-now-k">Last card</span><div class="bm-card mini ${deck}"><div class="bm-card-crest">${DECK_CREST[deck]||''}</div><div class="bm-card-h">${esc(title)}</div><p>${esc(text)}</p></div>`;
 }
 const FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
 function showDice(lane,a,b){
@@ -1209,7 +1272,7 @@ function calcRent(sp, dice, opts={}, payer=null){
 
 async function land(p, dice, opts={}){
   const sp = S.sp[p.pos];
-  showInfo(sp); refreshBoard(); renderPlayers();
+  showInfo(sp); showNowSpace(sp, p); refreshBoard(); renderPlayers();
   switch (sp.t){
     case 'prop': case 'rail': case 'util':
       if (sp.owner===null) await offerBuy(p, sp);
@@ -1258,6 +1321,7 @@ function showCard(p, deck, text){
   const name = DECK_NAME[deck];
   log(`${pn(p)} draws from ${DECK_CREST[deck]} <b>${esc(name)}</b>: <i>${esc(text)}</i>`);
   $('#bmInfo').innerHTML = `<b>${DECK_CREST[deck]} ${esc(name)}</b><br>${esc(text)}`;
+  showNowCard(deck, name, text);
   if (!p.isHuman) return sleep(1300);
   return new Promise(res=>{
     openModal(`<div class="bm-card ${deck}"><div class="bm-card-crest">${DECK_CREST[deck]}</div><div class="bm-card-h">${esc(name)}</div><p>${esc(text)}</p><button class="bm-btn primary" data-close>OK</button></div>`, {onClose:res, dismiss:false, card:true});
@@ -1304,6 +1368,7 @@ async function crossroads(p, c, deck){
   const who = c.all ? {name:'All three lanes', color:'#6b3fa0'} : PHIL[deck];
   log(`${pn(p)} reaches a ⚖️ <b>Crossroads</b> in ${DECK_CREST[deck]} ${esc(DECK_NAME[deck])} — ${esc(c.year)}: <i>${esc(c.t)}</i>`);
   $('#bmInfo').innerHTML = `<b>⚖️ Crossroads — ${esc(c.year)}</b><br>${esc(c.t)}`;
+  showNowCard(deck, 'Crossroads · '+c.year, c.t);
   let pick;
   if (!p.isHuman){ await sleep(1300); pick = aiCrossChoice(p, c); }
   else pick = await new Promise(res=>{
@@ -1836,6 +1901,8 @@ function startGame(){
   $('#bmSetup').hidden = true; $('#bmGame').hidden = false; $('#bmEndBtn').hidden = false; $('#bmRotate').classList.add('on');
   buildBoard(); renderPlayers(); refreshBoard();
   requestAnimationFrame(sizeBoard);
+  window.scrollTo(0, 0);
+  if (window.AGO && AGO.scrollToMe) AGO.scrollToMe();
   log(`Welcome to <b>${esc(CONFIG.title)}</b>. Everyone starts at Community Advancement with ${money(CONFIG.startCash)} and ${CONFIG.communityStart} Community points. Three lanes, three dice — the road will choose you.`);
   gameLoop();
 }
